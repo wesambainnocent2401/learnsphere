@@ -2,7 +2,13 @@ window.addEventListener("error", function (event) {
   const status = document.getElementById("libraryStatus");
   if (status) status.textContent = "Script error: " + event.message;
 });
-const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let db = null;
+try {
+  db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} catch (error) {
+  console.error("Supabase did not load:", error);
+}
 
 const SEARCH_URL = "https://openlibrary.org/search.json";
 const PAGE_SIZE = 20;
@@ -40,7 +46,7 @@ function updateSaveButton(button, key) {
 }
 
 async function toggleSave(book, button) {
-  if (!session) {
+  if (!db || !session) {
     window.location.href = "login.html";
     return;
   }
@@ -166,6 +172,8 @@ async function runSearch(query, page) {
 }
 
 async function loadSavedBooks() {
+  if (!db) return;
+
   const { data } = await db.auth.getSession();
   session = data.session;
   if (!session) return;
