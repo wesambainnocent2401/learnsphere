@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,7 +11,9 @@
     <header class="site-header">
         <div class="container header-content">
             <a href="index.html" class="logo">Learn<span>Sphere</span></a>
-            <button type="button" class="logout-button" id="logoutButton">Log out</button>
+            <button type="button" class="logout-button" id="logoutButton">
+                Log out
+            </button>
         </div>
     </header>
 
@@ -27,7 +30,10 @@
 
                 <section class="dash-card">
                     <h3>Learning progress</h3>
-                    <p>Pathways, lessons and quiz results will appear here in a later phase.</p>
+                    <p>
+                        Pathways, lessons and quiz results will appear here
+                        in a later phase.
+                    </p>
                 </section>
 
                 <section class="dash-card" id="adminCard" hidden>
@@ -35,6 +41,25 @@
                     <p id="userCount"></p>
                 </section>
             </div>
+
+            <section class="saved-books-section">
+                <div class="saved-books-heading">
+                    <div>
+                        <h2>My saved books</h2>
+                        <p>Books you've bookmarked from the LearnSphere library.</p>
+                    </div>
+
+                    <a href="library.html" class="saved-books-link">
+                        Explore library
+                    </a>
+                </div>
+
+                <p id="savedBooksStatus" aria-live="polite">
+                    Loading your saved books...
+                </p>
+
+                <div id="savedBooksGrid" class="book-grid"></div>
+            </section>
         </div>
     </main>
 
