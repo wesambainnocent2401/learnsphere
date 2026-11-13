@@ -3,11 +3,17 @@ const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const resourceSearchForm = document.getElementById("resourceSearchForm");
 const resourceSearch = document.getElementById("resourceSearch");
+const resourceCategory = document.getElementById("resourceCategory");
+const resourceSubject = document.getElementById("resourceSubject");
 const resourceType = document.getElementById("resourceType");
 const resourceStatus = document.getElementById("resourceStatus");
 const resourceGrid = document.getElementById("resourceGrid");
 
 let allResources = [];
+let allCategories = [];
+let allSubjects = [];
+
+const subjectMap = new Map();
 
 function createElement(tag, className, text) {
     const element = document.createElement(tag);
@@ -31,6 +37,41 @@ function formatResourceType(type) {
         .replace(/\b\w/g, function (letter) {
             return letter.toUpperCase();
         });
+}
+
+function addOption(select, value, text) {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = text;
+    select.appendChild(option);
+}
+
+function populateCategoryFilter() {
+    resourceCategory.replaceChildren();
+    addOption(resourceCategory, "", "All categories");
+
+    allCategories.forEach(function (category) {
+        addOption(resourceCategory, category.id, category.name);
+    });
+}
+
+function updateSubjectFilter() {
+    const selectedCategory = resourceCategory.value;
+
+    resourceSubject.replaceChildren();
+    addOption(resourceSubject, "", "All subjects");
+
+    const matchingSubjects = allSubjects.filter(function (subject) {
+        return !selectedCategory ||
+            subject.category_id === selectedCategory;
+    });
+
+    matchingSubjects.forEach(function (subject) {
+        addOption(resourceSubject, subject.id, subject.name);
+    });
+
+    resourceSubject.disabled = matchingSubjects.length === 0;
+    resourceSubject.value = "";
 }
 
 function createResourceCard(resource) {
@@ -57,6 +98,24 @@ function createResourceCard(resource) {
             formatResourceType(resource.resource_type)
         )
     );
+
+    const subject = subjectMap.get(resource.subject_id);
+
+    if (subject) {
+        details.append(
+            createElement("span", "resource-author", subject.name)
+        );
+
+        const category = allCategories.find(function (item) {
+            return item.id === subject.category_id;
+        });
+
+        if (category) {
+            details.append(
+                createElement("span", "resource-language", category.name)
+            );
+        }
+    }
 
     if (resource.author) {
         details.append(
@@ -132,7 +191,7 @@ function displayResources(resources) {
 
     if (resources.length === 0) {
         resourceStatus.textContent =
-            "No matching resources found. Try another search.";
+            "No matching resources found. Try another search or filter.";
 
         return;
     }
@@ -143,28 +202,44 @@ function displayResources(resources) {
 
     resourceStatus.textContent =
         "Showing " + resources.length +
-        (resources.length === 1 ? " learning resource." : " learning resources.");
+        (resources.length === 1
+            ? " learning resource."
+            : " learning resources.");
 }
 
 function filterResources() {
     const searchTerm = resourceSearch.value.trim().toLowerCase();
+    const selectedCategory = resourceCategory.value;
+    const selectedSubject = resourceSubject.value;
     const selectedType = resourceType.value;
 
     const filteredResources = allResources.filter(function (resource) {
+        const subject = subjectMap.get(resource.subject_id);
+
         const searchableText = [
             resource.title,
             resource.description,
             resource.author,
             resource.language,
-            resource.source_name
+            resource.source_name,
+            subject ? subject.name : ""
         ].filter(Boolean).join(" ").toLowerCase();
 
         const matchesSearch = searchableText.includes(searchTerm);
 
+        const matchesCategory = !selectedCategory ||
+            (subject && subject.category_id === selectedCategory);
+
+        const matchesSubject = !selectedSubject ||
+            resource.subject_id === selectedSubject;
+
         const matchesType = !selectedType ||
             resource.resource_type === selectedType;
 
-        return matchesSearch && matchesType;
+        return matchesSearch &&
+            matchesCategory &&
+            matchesSubject &&
+            matchesType;
     });
 
     displayResources(filteredResources);
@@ -173,25 +248,58 @@ function filterResources() {
 async function loadResources() {
     resourceStatus.textContent = "Loading learning resources...";
 
-    const { data, error } = await db
-        .from("resources")
-        .select(
-            "title, description, author, resource_type, language, publication_year, source_name, source_url, access_type"
-        )
-        .eq("approval_status", "approved")
-        .limit(100);
+    const [
+        { data: categories, error: categoryError },
+        { data: subjects, error: subjectError },
+        { data: resources, error: resourceError }
+    ] = await Promise.all([
+        db
+            .from("categories")
+            .select("id, name")
+            .eq("is_active", true)
+            .order("sort_order", { ascending: true }),
 
-    if (error) {
-        console.error("Resources loading error:", error);
+        db
+            .from("subjects")
+            .select("id, name, category_id")
+            .eq("is_active", true)
+            .order("sort_order", { ascending: true }),
+
+        db
+            .from("resources")
+            .select(
+                "title, description, author, resource_type, language, publication_year, source_name, source_url, access_type, subject_id"
+            )
+            .eq("approval_status", "approved")
+            .limit(100)
+    ]);
+
+    if (categoryError || subjectError || resourceError) {
+        console.error(
+            "Learning resources loading errors:",
+            categoryError,
+            subjectError,
+            resourceError
+        );
 
         resourceStatus.textContent =
-            "Could not load learning resources. Please try again.";
+            "Could not load learning resources. Please check your database permissions and try again.";
 
         return;
     }
 
-    allResources = data || [];
+    allCategories = categories || [];
+    allSubjects = subjects || [];
+    allResources = resources || [];
 
+    subjectMap.clear();
+
+    allSubjects.forEach(function (subject) {
+        subjectMap.set(subject.id, subject);
+    });
+
+    populateCategoryFilter();
+    updateSubjectFilter();
     filterResources();
 }
 
@@ -201,6 +309,13 @@ resourceSearchForm.addEventListener("submit", function (event) {
 });
 
 resourceSearch.addEventListener("input", filterResources);
+
+resourceCategory.addEventListener("change", function () {
+    updateSubjectFilter();
+    filterResources();
+});
+
+resourceSubject.addEventListener("change", filterResources);
 
 resourceType.addEventListener("change", filterResources);
 
