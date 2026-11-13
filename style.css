@@ -348,3 +348,78 @@ h3 { font-size: 1.1rem; }
   font-weight: 600;
   color: var(--navy);
 }
+/* Library page */
+.library-page { padding: 48px 0; }
+.library-form { display: flex; gap: 8px; max-width: 600px; margin: 18px 0 8px; }
+.library-form input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 1rem;
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--white);
+}
+.library-form input:focus { outline: 2px solid var(--teal); border-color: var(--teal); }
+.library-form button {
+  background: var(--teal);
+  color: var(--navy);
+  border: none;
+  border-radius: 999px;
+  padding: 12px 22px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.book-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+}
+.book-result {
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s;
+}
+.book-result:hover { transform: translateY(-3px); }
+.book-cover {
+  height: 200px;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  font-size: 2.4rem;
+}
+.book-cover img { width: 100%; height: 100%; object-fit: cover; }
+.book-info { padding: 12px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.book-info h3 { font-size: 0.95rem; }
+.book-info .book-meta { color: var(--muted); font-size: 0.82rem; }
+.access-badge {
+  align-self: flex-start;
+  margin-top: auto;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(19, 184, 166, 0.14);
+  color: var(--teal-dark);
+}
+.access-badge.limited { background: #FFF3D6; color: #9A6A00; }
+.access-badge.catalogue { background: var(--bg); color: var(--muted); }
+.source-note { margin-top: 28px; color: var(--muted); font-size: 0.85rem; }
+.more-button {
+  display: block;
+  margin: 24px auto 0;
+  background: var(--navy);
+  color: var(--white);
+  border: none;
+  border-radius: 999px;
+  padding: 12px 28px;
+  font-weight: 700;
+  cursor: pointer;
+}
