@@ -42,37 +42,24 @@ form.addEventListener("submit", async function (event) {
       const { error } = await db.auth.signInWithPassword({ email: email, password: password });
       if (error) throw new Error("Incorrect email or password, or your email is not confirmed yet.");
 
-      window.location.reload();
+      window.location.href = "dashboard.html";
+      return;
     }
   } catch (error) {
     showMessage(error.message, true);
-  } finally {
-    button.disabled = false;
   }
+
+  button.disabled = false;
 });
 
-// Login page: show the signed-in state and a log out button
-const signedIn = document.getElementById("signedIn");
-const loginPanel = document.getElementById("loginPanel");
-const userEmail = document.getElementById("userEmail");
-const signOutButton = document.getElementById("signOutButton");
-
+// Login page: if someone is already logged in, send them to the dashboard
 async function checkSession() {
-  if (!signedIn) return;
+  if (mode !== "login") return;
 
   const { data } = await db.auth.getSession();
   if (data.session) {
-    userEmail.textContent = data.session.user.email;
-    signedIn.hidden = false;
-    loginPanel.hidden = true;
+    window.location.replace("dashboard.html");
   }
-}
-
-if (signOutButton) {
-  signOutButton.addEventListener("click", async function () {
-    await db.auth.signOut();
-    window.location.reload();
-  });
 }
 
 checkSession();
