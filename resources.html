@@ -1,0 +1,67 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Resources | LearnSphere</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">Learn<span>Sphere</span></a>
+
+            <nav>
+                <a href="dashboard.html">Dashboard</a>
+                <a href="library.html">Books</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="library-page">
+        <div class="container">
+            <div class="library-heading">
+                <h1>Learning Resources</h1>
+                <p>
+                    Discover notes, past papers, revision materials
+                    and other learning resources.
+                </p>
+            </div>
+
+            <form id="resourceSearchForm" class="library-search">
+                <input
+                    type="search"
+                    id="resourceSearch"
+                    placeholder="Search notes, subjects or topics..."
+                    maxlength="150"
+                    aria-label="Search learning resources"
+                >
+                <button type="submit">Search</button>
+            </form>
+
+            <div class="resource-filters">
+                <label for="resourceType">Resource type</label>
+                <select id="resourceType">
+                    <option value="">All resources</option>
+                    <option value="notes">Notes</option>
+                    <option value="past_paper">Past papers</option>
+                    <option value="revision">Revision materials</option>
+                    <option value="video">Videos</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <p id="resourceStatus" aria-live="polite">
+                Loading learning resources...
+            </p>
+
+            <div id="resourceGrid" class="resource-grid"></div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="resources.js"></script>
+</body>
+</html>
