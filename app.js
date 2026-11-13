@@ -16,7 +16,7 @@ async function loadDomains() {
 
   if (error) {
     console.error(error);
-    categoryGrid.innerHTML = "<p>Could not load knowledge domains. Please try again.</p>";
+  categoryGrid.innerHTML = "<p>Could not load knowledge domains: " + escapeHtml(error.message) + "</p>";
     return;
   }
 
