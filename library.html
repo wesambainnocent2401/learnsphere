@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Search millions of books and learning resources in the LearnSphere digital library.">
+    <title>Digital Library | LearnSphere</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">Learn<span>Sphere</span></a>
+            <nav class="main-nav">
+                <a href="explore.html">Explore</a>
+                <a href="library.html">Library</a>
+            </nav>
+            <a href="login.html" class="header-button">Log in</a>
+        </div>
+    </header>
+
+    <main class="library-page">
+        <div class="container">
+            <p class="eyebrow">DIGITAL LIBRARY</p>
+            <h1>Search books and study materials</h1>
+
+            <form class="library-form" id="libraryForm">
+                <input type="search" id="libraryInput" maxlength="200" placeholder="Try: calculus, python, kiswahili" aria-label="Search the library">
+                <button type="submit">Search</button>
+            </form>
+            <p class="status-line" id="libraryStatus">Type a subject, title or author to begin.</p>
+
+            <div class="book-grid" id="bookGrid"></div>
+            <button type="button" class="more-button" id="moreButton" hidden>Load more</button>
+
+            <p class="source-note">
+                Book data comes from Open Library, a project of the Internet Archive.
+                Reading and borrowing follow Open Library's own licence and access rules.
+                LearnSphere does not host these books.
+            </p>
+        </div>
+    </main>
+
+    <script src="library.js"></script>
+</body>
+</html>
