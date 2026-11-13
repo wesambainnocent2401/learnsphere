@@ -261,3 +261,40 @@ h3 { font-size: 1.1rem; }
 .auth-message { margin-top: 16px; padding: 12px 14px; border-radius: 10px; font-weight: 600; font-size: 0.92rem; }
 .auth-error { background: #FDECEC; color: #B3261E; }
 .auth-success { background: rgba(19, 184, 166, 0.12); color: var(--teal-dark); }
+/* Dashboard */
+.dash-page { padding: 48px 0; }
+.dash-page h1 { margin-bottom: 6px; }
+.dash-sub { color: var(--muted); margin-bottom: 28px; }
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+.dash-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: var(--shadow);
+}
+.dash-card h3 { margin-bottom: 10px; }
+.dash-card p { color: var(--muted); font-size: 0.95rem; }
+.role-badge {
+  display: inline-block;
+  margin: 0 6px 6px 0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: rgba(19, 184, 166, 0.14);
+  color: var(--teal-dark);
+}
+.logout-button {
+  background: transparent;
+  border: 2px solid var(--teal);
+  color: var(--teal);
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
