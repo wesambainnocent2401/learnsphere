@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Browse every LearnSphere knowledge domain, category and subject.">
+    <title>Explore | LearnSphere</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">Learn<span>Sphere</span></a>
+            <a href="login.html" class="header-button">Log in</a>
+        </div>
+    </header>
+
+    <main class="explore-page">
+        <div class="container">
+            <p class="eyebrow">EXPLORE KNOWLEDGE</p>
+            <h1>Browse everything you can learn</h1>
+
+            <input type="search" id="filterInput" class="filter-box" placeholder="Filter subjects, e.g. calculus" aria-label="Filter the catalogue">
+            <p class="status-line" id="statusLine">Loading the catalogue...</p>
+
+            <div id="catalogue"></div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="explore.js"></script>
+</body>
+</html>
