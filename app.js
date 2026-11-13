@@ -1,3 +1,7 @@
+window.addEventListener("error", function (event) {
+  const grid = document.getElementById("categoryGrid");
+  if (grid) grid.innerHTML = "<p>Script error: " + event.message + "</p>";
+});
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const categoryGrid = document.getElementById("categoryGrid");
