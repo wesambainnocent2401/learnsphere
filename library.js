@@ -1,3 +1,5 @@
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 const SEARCH_URL = "https://openlibrary.org/search.json";
 const PAGE_SIZE = 20;
 
@@ -11,6 +13,8 @@ let currentQuery = "";
 let currentPage = 1;
 let totalFound = 0;
 let shownCount = 0;
+let session = null;
+const savedKeys = new Set();
 
 function makeElement(tag, className, text) {
   const node = document.createElement(tag);
@@ -25,14 +29,55 @@ function accessLabel(access) {
   return { text: "Catalogue only", css: "access-badge catalogue" };
 }
 
-function makeBookCard(book) {
-  const card = makeElement("a", "book-result");
+function updateSaveButton(button, key) {
+  const isSaved = savedKeys.has(key);
+  button.textContent = isSaved ? "Saved ✓" : "Save";
+  button.classList.toggle("saved", isSaved);
+}
 
-  // Only link to real Open Library work pages
-  if (typeof book.key === "string" && book.key.startsWith("/works/")) {
-    card.href = "https://openlibrary.org" + book.key;
-    card.target = "_blank";
-    card.rel = "noopener noreferrer";
+async function toggleSave(book, button) {
+  if (!session) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  button.disabled = true;
+
+  if (savedKeys.has(book.key)) {
+    const { error } = await db
+      .from("bookmarks")
+      .delete()
+      .eq("source", "openlibrary")
+      .eq("external_id", book.key);
+
+    if (error) libraryStatus.textContent = "Could not remove: " + error.message;
+    else savedKeys.delete(book.key);
+  } else {
+    const { error } = await db.from("bookmarks").insert({
+      source: "openlibrary",
+      external_id: book.key,
+      title: book.title.slice(0, 300),
+      author: book.author_name ? book.author_name[0].slice(0, 300) : null,
+      cover_id: Number.isInteger(book.cover_i) ? book.cover_i : null
+    });
+
+    if (error) libraryStatus.textContent = "Could not save: " + error.message;
+    else savedKeys.add(book.key);
+  }
+
+  updateSaveButton(button, book.key);
+  button.disabled = false;
+}
+
+function makeBookCard(book) {
+  const card = makeElement("div", "book-result");
+  const hasWorkPage = typeof book.key === "string" && book.key.startsWith("/works/");
+
+  const link = makeElement(hasWorkPage ? "a" : "div", "book-link");
+  if (hasWorkPage) {
+    link.href = "https://openlibrary.org" + book.key;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
   }
 
   const cover = makeElement("div", "book-cover");
@@ -48,9 +93,7 @@ function makeBookCard(book) {
 
   const info = makeElement("div", "book-info");
   info.append(makeElement("h3", "", book.title));
-
-  const author = book.author_name ? book.author_name[0] : "Unknown author";
-  info.append(makeElement("p", "book-meta", author));
+  info.append(makeElement("p", "book-meta", book.author_name ? book.author_name[0] : "Unknown author"));
 
   if (book.first_publish_year) {
     info.append(makeElement("p", "book-meta", "First published " + book.first_publish_year));
@@ -59,7 +102,19 @@ function makeBookCard(book) {
   const label = accessLabel(book.ebook_access);
   info.append(makeElement("span", label.css, label.text));
 
-  card.append(cover, info);
+  link.append(cover, info);
+  card.append(link);
+
+  if (hasWorkPage) {
+    const saveButton = makeElement("button", "save-button");
+    saveButton.type = "button";
+    updateSaveButton(saveButton, book.key);
+    saveButton.addEventListener("click", function () {
+      toggleSave(book, saveButton);
+    });
+    card.append(saveButton);
+  }
+
   return card;
 }
 
@@ -106,6 +161,19 @@ async function runSearch(query, page) {
   }
 }
 
+async function loadSavedBooks() {
+  const { data } = await db.auth.getSession();
+  session = data.session;
+  if (!session) return;
+
+  const { data: rows } = await db
+    .from("bookmarks")
+    .select("external_id")
+    .eq("source", "openlibrary");
+
+  if (rows) rows.forEach(function (row) { savedKeys.add(row.external_id); });
+}
+
 libraryForm.addEventListener("submit", function (event) {
   event.preventDefault();
 
@@ -122,10 +190,15 @@ moreButton.addEventListener("click", function () {
   runSearch(currentQuery, currentPage);
 });
 
-// Allow links like library.html?q=calculus
-const startingQuery = new URLSearchParams(window.location.search).get("q");
-if (startingQuery) {
-  libraryInput.value = startingQuery.slice(0, 200);
-  currentQuery = libraryInput.value.trim();
-  if (currentQuery) runSearch(currentQuery, 1);
+async function start() {
+  await loadSavedBooks();
+
+  const startingQuery = new URLSearchParams(window.location.search).get("q");
+  if (startingQuery) {
+    libraryInput.value = startingQuery.slice(0, 200);
+    currentQuery = libraryInput.value.trim();
+    if (currentQuery) runSearch(currentQuery, 1);
+  }
 }
+
+start();
