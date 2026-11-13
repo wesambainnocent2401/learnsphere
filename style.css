@@ -966,4 +966,88 @@ h3 { font-size: 1.1rem; }
   font-weight: 700;
   font-size: 0.9rem;
 }
-
+/* Admin page */
+.admin-wide { max-width: 720px; }
+.auth-card select, .auth-card textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--white);
+}
+.auth-card textarea { min-height: 90px; resize: vertical; }
+.checkbox-row { display: flex; gap: 10px; align-items: flex-start; margin-top: 16px; }
+.checkbox-row input { width: auto; margin-top: 4px; }
+.checkbox-row label { margin: 0; font-weight: 500; }
+.admin-list { margin-top: 32px; }
+.admin-item {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.admin-item h3 { font-size: 0.98rem; }
+.admin-item p { color: var(--muted); font-size: 0.82rem; }
+.admin-actions { display: flex; gap: 8px; }
+.admin-actions button {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 2px solid var(--teal);
+  background: transparent;
+  color: var(--teal-dark);
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.admin-actions .danger { border-color: #B3261E; color: #B3261E; }/* Admin page */
+.admin-wide { max-width: 720px; }
+.auth-card select, .auth-card textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--white);
+}
+.auth-card textarea { min-height: 90px; resize: vertical; }
+.checkbox-row { display: flex; gap: 10px; align-items: flex-start; margin-top: 16px; }
+.checkbox-row input { width: auto; margin-top: 4px; }
+.checkbox-row label { margin: 0; font-weight: 500; }
+.admin-list { margin-top: 32px; }
+.admin-item {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.admin-item h3 { font-size: 0.98rem; }
+.admin-item p { color: var(--muted); font-size: 0.82rem; }
+.admin-actions { display: flex; gap: 8px; }
+.admin-actions button {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 2px solid var(--teal);
+  background: transparent;
+  color: var(--teal-dark);
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.admin-actions .danger { border-color: #B3261E; color: #B3261E; }
