@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log in | LearnSphere</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">Learn<span>Sphere</span></a>
+            <a href="register.html" class="header-button">Get Started</a>
+        </div>
+    </header>
+
+    <main class="auth-page">
+        <div class="container">
+            <div class="auth-card">
+
+                <div id="signedIn" hidden>
+                    <h1>You are logged in</h1>
+                    <p class="auth-sub" id="userEmail"></p>
+                    <button type="button" class="auth-button" id="signOutButton">Log out</button>
+                </div>
+
+                <div id="loginPanel">
+                    <h1>Welcome back</h1>
+                    <p class="auth-sub">Log in to continue learning.</p>
+
+                    <form id="authForm" data-mode="login">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" autocomplete="email" required>
+
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" autocomplete="current-password" required>
+
+                        <button type="submit" class="auth-button">Log in</button>
+                    </form>
+
+                    <p class="auth-message" id="authMessage" hidden></p>
+                    <p class="auth-switch">New here? <a href="register.html">Create an account</a></p>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="auth.js"></script>
+</body>
+</html>
