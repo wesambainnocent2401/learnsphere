@@ -1,3 +1,7 @@
+window.addEventListener("error", function (event) {
+  const status = document.getElementById("libraryStatus");
+  if (status) status.textContent = "Script error: " + event.message;
+});
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const SEARCH_URL = "https://openlibrary.org/search.json";
