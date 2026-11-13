@@ -1,48 +1,167 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Search millions of books and learning resources in the LearnSphere digital library.">
+    <meta name="description" content="Discover Kenyan textbooks, set books, revision materials and international books on LearnSphere.">
     <title>Digital Library | LearnSphere</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
+
     <header class="site-header">
         <div class="container header-content">
-            <a href="index.html" class="logo">Learn<span>Sphere</span></a>
+            <a href="index.html" class="logo">
+                Learn<span>Sphere</span>
+            </a>
+
             <nav class="main-nav">
                 <a href="explore.html">Explore</a>
                 <a href="library.html">Library</a>
+                <a href="resources.html">Resources</a>
             </nav>
+
             <a href="login.html" class="header-button">Log in</a>
         </div>
     </header>
 
     <main class="library-page">
+
         <div class="container">
-            <p class="eyebrow">DIGITAL LIBRARY</p>
-            <h1>Search books and study materials</h1>
 
-            <form class="library-form" id="libraryForm">
-                <input type="search" id="libraryInput" maxlength="200" placeholder="Try: calculus, python, kiswahili" aria-label="Search the library">
-                <button type="submit">Search</button>
-            </form>
-            <p class="status-line" id="libraryStatus">Type a subject, title or author to begin.</p>
+            <!-- Kenyan Books Collection -->
+            <section class="kenyan-books-section">
 
-            <div class="book-grid" id="bookGrid"></div>
-            <button type="button" class="more-button" id="moreButton" hidden>Load more</button>
+                <p class="eyebrow">MADE FOR KENYAN LEARNERS</p>
 
-            <p class="source-note">
-                Book data comes from Open Library, a project of the Internet Archive.
-                Reading and borrowing follow Open Library's own licence and access rules.
-                LearnSphere does not host these books.
-            </p>
+                <h1>Kenyan Books Collection</h1>
+
+                <p class="section-description">
+                    Discover Kenyan set books, textbooks, KCSE
+                    revision materials and university learning books.
+                </p>
+
+                <form id="kenyanSearchForm" class="library-form">
+
+                    <input
+                        type="search"
+                        id="kenyanSearchInput"
+                        maxlength="200"
+                        placeholder="Search Kenyan books or authors..."
+                        aria-label="Search Kenyan books"
+                    >
+
+                    <button type="submit">Search</button>
+
+                </form>
+
+                <div class="kenyan-book-filters">
+
+                    <label for="kenyanCategory">
+                        Book category
+                    </label>
+
+                    <select id="kenyanCategory">
+                        <option value="">All categories</option>
+                        <option value="set_book">Set books</option>
+                        <option value="textbook">Textbooks</option>
+                        <option value="revision">Revision materials</option>
+                        <option value="university">University books</option>
+                        <option value="other">Other</option>
+                    </select>
+
+                    <label for="kenyanSubject">
+                        Subject
+                    </label>
+
+                    <select id="kenyanSubject">
+                        <option value="">All subjects</option>
+                    </select>
+
+                </div>
+
+                <p
+                    class="status-line"
+                    id="kenyanBookStatus"
+                    aria-live="polite"
+                >
+                    Loading Kenyan books...
+                </p>
+
+                <div
+                    class="book-grid"
+                    id="kenyanBookGrid"
+                ></div>
+
+            </section>
+
+            <!-- International Library -->
+            <section class="international-library-section">
+
+                <p class="eyebrow">EXPLORE THE WORLD</p>
+
+                <h2>International Digital Library</h2>
+
+                <p class="section-description">
+                    Search international books, discover authors
+                    and find legitimate reading and borrowing options.
+                </p>
+
+                <form class="library-form" id="libraryForm">
+
+                    <input
+                        type="search"
+                        id="libraryInput"
+                        maxlength="200"
+                        placeholder="Try: calculus, python, kiswahili"
+                        aria-label="Search the international library"
+                    >
+
+                    <button type="submit">Search</button>
+
+                </form>
+
+                <p
+                    class="status-line"
+                    id="libraryStatus"
+                    aria-live="polite"
+                >
+                    Type a subject, title or author to begin.
+                </p>
+
+                <div
+                    class="book-grid"
+                    id="bookGrid"
+                ></div>
+
+                <button
+                    type="button"
+                    class="more-button"
+                    id="moreButton"
+                    hidden
+                >
+                    Load more
+                </button>
+
+                <p class="source-note">
+                    International book data comes from Open Library,
+                    a project of the Internet Archive.
+                    Reading and borrowing follow Open Library's
+                    own access and licence rules.
+                    LearnSphere does not host these books.
+                </p>
+
+            </section>
+
         </div>
+
     </main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js"></script>
-<script src="library.js"></script>
-    
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="library.js"></script>
+
 </body>
 </html>
