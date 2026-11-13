@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | LearnSphere</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">Learn<span>Sphere</span></a>
+            <button type="button" class="logout-button" id="logoutButton">Log out</button>
+        </div>
+    </header>
+
+    <main class="dash-page">
+        <div class="container">
+            <h1 id="welcome">Loading your dashboard...</h1>
+            <p class="dash-sub" id="emailLine"></p>
+
+            <div class="dash-grid">
+                <section class="dash-card">
+                    <h3>Your roles</h3>
+                    <div id="roleList"></div>
+                </section>
+
+                <section class="dash-card">
+                    <h3>Learning progress</h3>
+                    <p>Pathways, lessons and quiz results will appear here in a later phase.</p>
+                </section>
+
+                <section class="dash-card" id="adminCard" hidden>
+                    <h3>Administrator overview</h3>
+                    <p id="userCount"></p>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>
