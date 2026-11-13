@@ -1,3 +1,4 @@
+document.getElementById("libraryStatus").textContent = "library.js is running";
 window.addEventListener("error", function (event) {
   const status = document.getElementById("libraryStatus");
   if (status) status.textContent = "Script error: " + event.message;
