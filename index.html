@@ -70,44 +70,8 @@
                     <p>Find a subject or discover something new.</p>
                 </div>
 
-                <div class="category-grid">
-
-                    <a href="#" class="category-card">
-                        <span class="category-icon">📚</span>
-                        <h3>Academic Education</h3>
-                        <p>School subjects, notes and revision.</p>
-                    </a>
-
-                    <a href="#" class="category-card">
-                        <span class="category-icon">🎓</span>
-                        <h3>University Studies</h3>
-                        <p>Courses, units and lecture materials.</p>
-                    </a>
-
-                    <a href="#" class="category-card">
-                        <span class="category-icon">📐</span>
-                        <h3>Mathematics</h3>
-                        <p>From basic arithmetic to advanced calculus.</p>
-                    </a>
-
-                    <a href="#" class="category-card">
-                        <span class="category-icon">💻</span>
-                        <h3>Technology</h3>
-                        <p>Programming, AI and computer science.</p>
-                    </a>
-
-                    <a href="#" class="category-card" id="skills">
-                        <span class="category-icon">🚀</span>
-                        <h3>Digital Skills</h3>
-                        <p>Learn practical skills for the digital world.</p>
-                    </a>
-
-                    <a href="#" class="category-card">
-                        <span class="category-icon">🌍</span>
-                        <h3>Life Skills</h3>
-                        <p>Knowledge for everyday life and work.</p>
-                    </a>
-
+                <div class="category-grid" id="categoryGrid">
+                    <p>Loading knowledge domains...</p>
                 </div>
 
                 <p class="search-message" id="searchMessage" hidden></p>
@@ -178,6 +142,8 @@
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
     <script src="app.js"></script>
 
 </body>
