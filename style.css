@@ -620,3 +620,314 @@ h3 { font-size: 1.1rem; }
   }
 }
 
+/* =====================================
+   LEARNSPHERE DIGITAL LIBRARY REDESIGN
+===================================== */
+
+.library-page {
+    padding: 55px 0 75px;
+}
+
+.kenyan-books-section,
+.international-library-section {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    margin-bottom: 38px;
+    box-shadow: var(--shadow);
+}
+
+.kenyan-books-section {
+    border-top: 5px solid var(--teal);
+}
+
+.international-library-section {
+    border-top: 5px solid var(--navy);
+}
+
+.kenyan-books-section h1 {
+    font-size: clamp(1.8rem, 5vw, 2.7rem);
+    margin-bottom: 12px;
+}
+
+.international-library-section h2 {
+    margin-bottom: 12px;
+}
+
+.section-description {
+    color: var(--muted);
+    max-width: 680px;
+    margin-bottom: 20px;
+    line-height: 1.7;
+}
+
+/* Search forms */
+
+.library-form {
+    display: flex;
+    gap: 10px;
+    max-width: 720px;
+    margin: 22px 0;
+}
+
+.library-form input {
+    flex: 1;
+    min-width: 0;
+    padding: 14px 18px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.library-form input:focus {
+    outline: none;
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(19, 184, 166, 0.12);
+}
+
+.library-form button {
+    padding: 13px 25px;
+    border: none;
+    border-radius: 12px;
+    background: var(--teal);
+    color: var(--navy);
+    font-weight: 800;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.library-form button:hover {
+    background: var(--teal-dark);
+    color: var(--white);
+    transform: translateY(-2px);
+}
+
+/* Kenyan book filters */
+
+.kenyan-book-filters {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 24px 0;
+    padding: 18px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+}
+
+.kenyan-book-filters label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--navy);
+}
+
+.kenyan-book-filters select {
+    min-width: 150px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--white);
+    color: var(--text);
+    font: inherit;
+    cursor: pointer;
+}
+
+.kenyan-book-filters select:focus {
+    outline: 2px solid var(--teal);
+    border-color: var(--teal);
+}
+
+/* Library status */
+
+.library-page .status-line {
+    padding: 12px 15px;
+    margin: 18px 0;
+    background: rgba(19, 184, 166, 0.07);
+    border-left: 3px solid var(--teal);
+    border-radius: 6px;
+}
+
+/* Book grids */
+
+.library-page .book-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+    gap: 20px;
+    margin-top: 22px;
+}
+
+.library-page .book-result {
+    min-width: 0;
+    border-radius: 15px;
+    transition: transform 0.25s, box-shadow 0.25s;
+}
+
+.library-page .book-result:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 28px rgba(16, 29, 53, 0.13);
+}
+
+.library-page .book-cover {
+    height: 215px;
+    overflow: hidden;
+    background: linear-gradient(145deg, #EAF3F8, #DDEBEF);
+}
+
+.library-page .book-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.library-page .book-info {
+    padding: 15px;
+    gap: 8px;
+}
+
+.library-page .book-info h3 {
+    font-size: 0.96rem;
+    line-height: 1.4;
+}
+
+.library-page .book-meta {
+    line-height: 1.5;
+}
+
+.library-page .access-badge {
+    margin-top: 8px;
+}
+
+/* Kenyan resource cards */
+
+.kenyan-book-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 20px;
+    gap: 12px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.kenyan-book-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 25px rgba(16, 29, 53, 0.12);
+}
+
+.kenyan-book-card h3 {
+    font-size: 1.05rem;
+    line-height: 1.4;
+}
+
+.kenyan-book-card p {
+    color: var(--muted);
+    font-size: 0.88rem;
+}
+
+.kenyan-book-card .book-category {
+    display: inline-block;
+    align-self: flex-start;
+    padding: 5px 11px;
+    background: rgba(19, 184, 166, 0.13);
+    color: var(--teal-dark);
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+.kenyan-book-card button,
+.kenyan-book-card a {
+    display: inline-block;
+    align-self: flex-start;
+    margin-top: auto;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 999px;
+    background: var(--navy);
+    color: var(--white);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.kenyan-book-card button:hover,
+.kenyan-book-card a:hover {
+    background: var(--teal-dark);
+}
+
+/* Load more */
+
+.library-page .more-button {
+    padding: 13px 30px;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.library-page .more-button:hover {
+    background: var(--teal-dark);
+    transform: translateY(-2px);
+}
+
+/* Mobile layout */
+
+@media (max-width: 600px) {
+    .library-page {
+        padding: 28px 0 45px;
+    }
+
+    .kenyan-books-section,
+    .international-library-section {
+        padding: 20px 15px;
+        border-radius: 15px;
+        margin-bottom: 25px;
+    }
+
+    .library-form {
+        flex-direction: column;
+    }
+
+    .library-form button {
+        width: 100%;
+    }
+
+    .kenyan-book-filters {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .kenyan-book-filters select {
+        width: 100%;
+    }
+
+    .library-page .book-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .library-page .book-cover {
+        height: 175px;
+    }
+
+    .library-page .book-info {
+        padding: 11px;
+    }
+
+    .kenyan-book-card {
+        padding: 14px;
+    }
+}
+
+@media (max-width: 350px) {
+    .library-page .book-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
