@@ -423,3 +423,18 @@ h3 { font-size: 1.1rem; }
   font-weight: 700;
   cursor: pointer;
 }
+/* Save button and card link */
+.book-link { display: flex; flex-direction: column; flex: 1; }
+.save-button {
+  margin: 0 12px 12px;
+  padding: 8px;
+  border-radius: 999px;
+  border: 2px solid var(--teal);
+  background: transparent;
+  color: var(--teal-dark);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.save-button.saved { background: var(--teal); color: var(--navy); }
+.save-button:disabled { opacity: 0.6; cursor: not-allowed; }
