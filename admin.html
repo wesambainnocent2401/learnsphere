@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Resources | LearnSphere</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">Learn<span>Sphere</span></a>
+            <a href="dashboard.html" class="header-button">Dashboard</a>
+        </div>
+    </header>
+
+    <main class="dash-page">
+        <div class="container">
+            <h1>Manage resources</h1>
+            <p class="dash-sub" id="adminStatus">Checking access...</p>
+
+            <div id="adminArea" hidden>
+                <div class="auth-card admin-wide">
+                    <h2>Add a resource</h2>
+                    <form id="resourceForm">
+                        <label for="title">Title</label>
+                        <input type="text" id="title" maxlength="300" required>
+
+                        <label for="resourceType">Type</label>
+                        <select id="resourceType" required>
+                            <option value="past_paper">Past paper</option>
+                            <option value="marking_scheme">Marking scheme</option>
+                            <option value="revision_notes">Revision notes</option>
+                            <option value="study_guide">Study guide</option>
+                            <option value="textbook">Textbook</option>
+                            <option value="reference_book">Reference book</option>
+                            <option value="lecture_notes">Lecture notes</option>
+                            <option value="practical_guide">Practical guide</option>
+                            <option value="research">Research</option>
+                            <option value="open_educational_resource">Open resource</option>
+                        </select>
+
+                        <label for="subjectName">Subject (e.g. Mathematics)</label>
+                        <input type="text" id="subjectName" maxlength="80">
+
+                        <label for="curriculum">Curriculum (e.g. KCSE, CBC)</label>
+                        <input type="text" id="curriculum" maxlength="40">
+
+                        <label for="formOrGrade">Form or grade (e.g. Form 4, Grade 6)</label>
+                        <input type="text" id="formOrGrade" maxlength="20">
+
+                        <label for="educationLevel">Education level</label>
+                        <select id="educationLevel">
+                            <option value="">Not specified</option>
+                            <option value="pre_primary">Pre-primary</option>
+                            <option value="primary">Primary</option>
+                            <option value="junior_school">Junior school</option>
+                            <option value="senior_school">Senior school</option>
+                            <option value="secondary">Secondary</option>
+                            <option value="tvet">TVET</option>
+                            <option value="university">University</option>
+                            <option value="general">General</option>
+                        </select>
+
+                        <label for="examYear">Exam year (past papers only)</label>
+                        <input type="number" id="examYear" min="1960" max="2100">
+
+                        <label for="author">Author</label>
+                        <input type="text" id="author" maxlength="200">
+
+                        <label for="description">Short description</label>
+                        <textarea id="description" maxlength="1000"></textarea>
+
+                        <label for="sourceName">Source (who published or owns it)</label>
+                        <input type="text" id="sourceName" maxlength="200" required>
+
+                        <label for="sourceUrl">Link (must start with https://)</label>
+                        <input type="url" id="sourceUrl" maxlength="500" placeholder="https://" required>
+
+                        <label for="licence">Licence or permission</label>
+                        <input type="text" id="licence" maxlength="300" placeholder="e.g. Free to share, permission from publisher" required>
+
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="declaration" required>
+                            <label for="declaration">I confirm this material is openly licensed, or I have permission to share it or link to it.</label>
+                        </div>
+
+                        <button type="submit" class="auth-button">Save as draft</button>
+                    </form>
+                    <p class="auth-message" id="formMessage" hidden></p>
+                </div>
+
+                <div class="admin-list">
+                    <h2>All resources</h2>
+                    <p class="dash-sub">Drafts stay hidden from the public until you approve them.</p>
+                    <div id="adminList"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="admin.js"></script>
+</body>
+  </html>
