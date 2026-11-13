@@ -1,15 +1,29 @@
-window.addEventListener("error", function (event) {
-  const grid = document.getElementById("categoryGrid");
-  if (grid) grid.innerHTML = "<p>Script error: " + event.message + "</p>";
-});
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const categoryGrid = document.getElementById("categoryGrid");
+const searchForm = document.getElementById("searchForm");
+const searchInput = document.getElementById("searchInput");
+const searchMessage = document.getElementById("searchMessage");
 
-function escapeHtml(text) {
-  const div = document.createElement("div");
-  div.textContent = text ?? "";
-  return div.innerHTML;
+function makeCard(domain) {
+  const card = document.createElement("a");
+  card.className = "category-card";
+  card.href = "explore.html";
+
+  if (domain.slug === "technology-digital-skills") card.id = "skills";
+
+  const icon = document.createElement("span");
+  icon.className = "category-icon";
+  icon.textContent = domain.icon;
+
+  const title = document.createElement("h3");
+  title.textContent = domain.name;
+
+  const text = document.createElement("p");
+  text.textContent = domain.description;
+
+  card.append(icon, title, text);
+  return card;
 }
 
 async function loadDomains() {
@@ -19,29 +33,12 @@ async function loadDomains() {
     .order("sort_order");
 
   if (error) {
-    console.error(error);
-  categoryGrid.innerHTML = "<p>Could not load knowledge domains: " + escapeHtml(error.message) + "</p>";
+    categoryGrid.textContent = "Could not load knowledge domains: " + error.message;
     return;
   }
 
-  categoryGrid.innerHTML = data.map(function (domain) {
-    const idAttribute = domain.slug === "technology-digital-skills" ? ' id="skills"' : "";
-    return `
-      <a href="#" class="category-card"${idAttribute}>
-        <span class="category-icon">${escapeHtml(domain.icon)}</span>
-        <h3>${escapeHtml(domain.name)}</h3>
-        <p>${escapeHtml(domain.description)}</p>
-      </a>
-    `;
-  }).join("");
+  categoryGrid.replaceChildren(...data.map(makeCard));
 }
-
-loadDomains();
-
-// Search (the real search arrives in Phase 3)
-const searchForm = document.getElementById("searchForm");
-const searchInput = document.getElementById("searchInput");
-const searchMessage = document.getElementById("searchMessage");
 
 searchForm.addEventListener("submit", function (event) {
   event.preventDefault();
@@ -53,3 +50,5 @@ searchForm.addEventListener("submit", function (event) {
   searchMessage.textContent = 'Search for "' + query + '" goes live in Phase 3, once the library is connected.';
   searchMessage.scrollIntoView({ behavior: "smooth", block: "center" });
 });
+
+loadDomains();
