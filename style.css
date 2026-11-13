@@ -929,5 +929,41 @@ h3 { font-size: 1.1rem; }
         grid-template-columns: 1fr;
     }
 }
-
+/* Kenya library */
+.filter-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 8px; }
+.filter-row select, .filter-row input {
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--white);
+}
+.filter-row input { flex: 1; min-width: 180px; }
+.resource-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.resource-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.resource-card h3 { font-size: 1.05rem; }
+.resource-card p { color: var(--muted); font-size: 0.9rem; }
+.resource-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.resource-card .source-line { font-size: 0.82rem; }
+.open-link {
+  margin-top: auto;
+  align-self: flex-start;
+  padding: 9px 18px;
+  border-radius: 999px;
+  background: var(--teal);
+  color: var(--navy);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
 
