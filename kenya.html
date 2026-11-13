@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Kenyan study materials, KCSE and CBC resources, past papers and set books on LearnSphere.">
+    <title>Kenya Library | LearnSphere</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">Learn<span>Sphere</span></a>
+            <nav class="main-nav">
+                <a href="explore.html">Explore</a>
+                <a href="library.html">Library</a>
+                <a href="kenya.html">Kenya</a>
+            </nav>
+            <a href="login.html" class="header-button">Log in</a>
+        </div>
+    </header>
+
+    <main class="library-page">
+        <div class="container">
+            <p class="eyebrow">KENYA LIBRARY</p>
+            <h1>Kenyan study materials</h1>
+
+            <div class="filter-row">
+                <select id="curriculumFilter" aria-label="Curriculum">
+                    <option value="">All curricula</option>
+                </select>
+                <select id="typeFilter" aria-label="Resource type">
+                    <option value="">All types</option>
+                </select>
+                <input type="search" id="textFilter" maxlength="100" placeholder="Search title or subject" aria-label="Search">
+            </div>
+            <p class="status-line" id="kenyaStatus">Loading resources...</p>
+
+            <div class="resource-list" id="resourceList"></div>
+
+            <p class="source-note">
+                Every resource shows its source and licence. LearnSphere only links to or hosts material
+                that is openly available or shared with permission. Past papers and set books belong to their
+                owners (KNEC, publishers and authors).
+            </p>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="kenya.js"></script>
+</body>
+</html>
