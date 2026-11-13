@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account | LearnSphere</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">Learn<span>Sphere</span></a>
+            <a href="login.html" class="header-button">Log in</a>
+        </div>
+    </header>
+
+    <main class="auth-page">
+        <div class="container">
+            <div class="auth-card">
+                <h1>Create your account</h1>
+                <p class="auth-sub">Start learning with LearnSphere.</p>
+
+                <form id="authForm" data-mode="register">
+                    <label for="displayName">Your name</label>
+                    <input type="text" id="displayName" name="displayName" maxlength="80" autocomplete="name" required>
+
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" autocomplete="email" required>
+
+                    <label for="password">Password (at least 8 characters)</label>
+                    <input type="password" id="password" name="password" minlength="8" autocomplete="new-password" required>
+
+                    <label for="confirmPassword">Confirm password</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" minlength="8" autocomplete="new-password" required>
+
+                    <button type="submit" class="auth-button">Create account</button>
+                </form>
+
+                <p class="auth-message" id="authMessage" hidden></p>
+                <p class="auth-switch">Already have an account? <a href="login.html">Log in</a></p>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="auth.js"></script>
+</body>
+</html>
