@@ -50,7 +50,9 @@ function render(filterText) {
 
       const list = makeElement("div", "subject-list");
       subjects.forEach(function (subject) {
-        list.append(makeElement("span", "subject-chip", subject.name));
+        const chip = makeElement("a", "subject-chip", subject.name);
+        chip.href = "library.html?q=" + encodeURIComponent(subject.name);
+        list.append(chip);
         subjectCount++;
       });
 
