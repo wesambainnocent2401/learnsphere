@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Ask the LearnSphere study assistant to explain concepts and help you revise.">
+    <title>AI Study Assistant | LearnSphere</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">Learn<span>Sphere</span></a>
+            <nav class="main-nav">
+                <a href="explore.html">Explore</a>
+                <a href="library.html">Library</a>
+                <a href="ai-tutor.html">AI Tutor</a>
+            </nav>
+            <a href="login.html" class="header-button">Log in</a>
+        </div>
+    </header>
+
+    <main class="library-page">
+        <div class="container">
+            <p class="eyebrow">AI STUDY ASSISTANT</p>
+            <h1>Ask anything you are studying</h1>
+
+            <p class="notice-box">
+                The assistant can make mistakes. Check important facts with your teacher or textbook,
+                and never share your phone number, address or passwords.
+            </p>
+
+            <p class="status-line" id="chatStatus">Checking your account...</p>
+
+            <div class="chat-log" id="chatLog"></div>
+
+            <form class="chat-form" id="chatForm" hidden>
+                <textarea id="chatInput" maxlength="2000" placeholder="e.g. Explain how to solve 3x + 5 = 20" aria-label="Your question"></textarea>
+                <button type="submit" id="sendButton">Ask</button>
+            </form>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="ai-tutor.js"></script>
+</body>
+</html>
