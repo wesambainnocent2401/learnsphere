@@ -1053,3 +1053,48 @@ h3 { font-size: 1.1rem; }
 .admin-actions .danger { border-color: #B3261E; color: #B3261E; }
 a.subject-chip { transition: background 0.2s, border-color 0.2s; }
 a.subject-chip:hover { background: rgba(19, 184, 166, 0.12); border-color: var(--teal); }
+/* Universities page */
+.uni-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.uni-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.uni-card h3 { font-size: 1.05rem; }
+.uni-card p { color: var(--muted); font-size: 0.88rem; }
+.uni-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.uni-actions button, .uni-actions a {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 2px solid var(--teal);
+  background: transparent;
+  color: var(--teal-dark);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.programme-panel { margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--border); }
+.programme-panel h4 { font-size: 0.85rem; color: var(--navy); margin: 10px 0 4px; }
+.programme-panel li { list-style: none; font-size: 0.88rem; padding: 3px 0; color: var(--text); }
+.course-results { margin: 14px 0; display: grid; gap: 8px; }
+.course-row {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+.course-row strong { display: block; color: var(--navy); }
+.course-row span { color: var(--muted); font-size: 0.85rem; }
+.notice-box {
+  margin-top: 20px;
+  padding: 14px 16px;
+  background: #FFF3D6;
+  color: #7A5600;
+  border-radius: var(--radius);
+  font-size: 0.88rem;
+}
