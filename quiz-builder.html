@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Builder | LearnSphere</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">Learn<span>Sphere</span></a>
+            <a href="dashboard.html" class="header-button">Dashboard</a>
+        </div>
+    </header>
+
+    <main class="dash-page">
+        <div class="container">
+            <h1>Quiz builder</h1>
+            <p class="dash-sub" id="builderStatus">Checking access...</p>
+
+            <div id="builderArea" hidden>
+                <div class="auth-card admin-wide">
+                    <form id="quizBuilderForm">
+                        <label for="quizTitle">Quiz title</label>
+                        <input type="text" id="quizTitle" maxlength="200" required>
+
+                        <label for="quizSubject">Subject</label>
+                        <input type="text" id="quizSubject" maxlength="80" placeholder="e.g. Mathematics">
+
+                        <label for="quizCurriculum">Curriculum</label>
+                        <input type="text" id="quizCurriculum" maxlength="40" placeholder="e.g. KCSE, CBC">
+
+                        <label for="quizLevel">Level</label>
+                        <input type="text" id="quizLevel" maxlength="40" placeholder="e.g. secondary, Form 3">
+
+                        <label for="quizDescription">Short description</label>
+                        <textarea id="quizDescription" maxlength="1000"></textarea>
+
+                        <div id="questionList"></div>
+
+                        <div class="builder-actions">
+                            <button type="button" class="small-button" id="addQuestion">+ Add question</button>
+                        </div>
+
+                        <div class="checkbox-row" id="publishRow" hidden>
+                            <input type="checkbox" id="publishNow">
+                            <label for="publishNow">Publish now (otherwise it is saved as a draft)</label>
+                        </div>
+
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="originalDeclaration" required>
+                            <label for="originalDeclaration">These questions are my own work or I have permission to use them. I did not copy them from a protected exam paper.</label>
+                        </div>
+
+                        <button type="submit" class="auth-button">Save quiz</button>
+                    </form>
+                    <p class="auth-message" id="builderMessage" hidden></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="quiz-builder.js"></script>
+</body>
+</html>
