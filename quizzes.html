@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Practice quizzes with instant feedback on LearnSphere.">
+    <title>Quizzes | LearnSphere</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">Learn<span>Sphere</span></a>
+            <nav class="main-nav">
+                <a href="explore.html">Explore</a>
+                <a href="library.html">Library</a>
+                <a href="quizzes.html">Quizzes</a>
+            </nav>
+            <a href="login.html" class="header-button">Log in</a>
+        </div>
+    </header>
+
+    <main class="library-page">
+        <div class="container">
+            <p class="eyebrow">PRACTICE</p>
+            <h1 id="pageTitle">Quizzes</h1>
+            <p class="status-line" id="quizStatus">Loading...</p>
+
+            <div id="scoreArea"></div>
+            <div class="quiz-list" id="quizList"></div>
+            <form id="quizForm" hidden></form>
+            <button type="submit" form="quizForm" class="auth-button" id="submitQuiz" hidden>Submit answers</button>
+
+            <div id="historyArea" hidden>
+                <h2 style="margin-top:32px">Your recent scores</h2>
+                <div id="historyList"></div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="quizzes.js"></script>
+</body>
+</html>
