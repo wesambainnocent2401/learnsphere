@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Browse universities in Kenya and the courses they offer.">
+    <title>Universities in Kenya | LearnSphere</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">Learn<span>Sphere</span></a>
+            <nav class="main-nav">
+                <a href="explore.html">Explore</a>
+                <a href="library.html">Library</a>
+                <a href="universities.html">Universities</a>
+            </nav>
+            <a href="login.html" class="header-button">Log in</a>
+        </div>
+    </header>
+
+    <main class="library-page">
+        <div class="container">
+            <p class="eyebrow">HIGHER EDUCATION</p>
+            <h1>Universities in Kenya</h1>
+
+            <form class="library-form" id="courseForm">
+                <input type="search" id="courseInput" maxlength="100" placeholder="Find a course, e.g. Computer Science" aria-label="Search courses">
+                <button type="submit">Find course</button>
+            </form>
+            <p class="status-line" id="courseStatus"></p>
+            <div class="course-results" id="courseResults"></div>
+
+            <div class="filter-row">
+                <select id="typeFilter" aria-label="University type">
+                    <option value="">All types</option>
+                    <option value="public_university">Public universities</option>
+                    <option value="private_university">Private universities</option>
+                    <option value="specialised_university">Specialised universities</option>
+                    <option value="constituent_college">Constituent colleges</option>
+                    <option value="tvet_institution">TVET institutions</option>
+                </select>
+                <input type="search" id="nameFilter" maxlength="100" placeholder="Filter by university name" aria-label="Filter universities">
+            </div>
+            <p class="status-line" id="uniStatus">Loading universities...</p>
+
+            <div class="uni-list" id="uniList"></div>
+
+            <p class="notice-box">
+                Always confirm that a university and its course are accredited on the official
+                Commission for University Education (CUE) website before you apply. Lists change as
+                institutions are chartered and programmes are approved.
+            </p>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="universities.js"></script>
+</body>
+</html>
