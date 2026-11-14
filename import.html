@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import Courses | LearnSphere</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">Learn<span>Sphere</span></a>
+            <a href="dashboard.html" class="header-button">Dashboard</a>
+        </div>
+    </header>
+
+    <main class="dash-page">
+        <div class="container">
+            <h1>Import courses</h1>
+            <p class="dash-sub" id="importStatus">Checking access...</p>
+
+            <div id="importArea" hidden>
+                <div class="auth-card admin-wide">
+                    <h2>Upload a CSV file</h2>
+                    <p class="auth-sub">
+                        First row must be exactly:<br>
+                        <strong>institution_slug,name,level,field,duration,source_url</strong>
+                    </p>
+                    <p class="auth-sub">
+                        Levels: certificate, diploma, undergraduate, postgraduate_diploma, masters, phd.
+                        Maximum 5,000 rows and 2 MB per file.
+                    </p>
+
+                    <input type="file" id="csvFile" accept=".csv,text/csv">
+
+                    <p class="auth-message" id="importMessage" hidden></p>
+                    <ul id="errorList"></ul>
+
+                    <button type="button" class="auth-button" id="importButton" disabled>Import valid rows</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="import.js"></script>
+</body>
+</html>
