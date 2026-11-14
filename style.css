@@ -1051,3 +1051,5 @@ h3 { font-size: 1.1rem; }
   cursor: pointer;
 }
 .admin-actions .danger { border-color: #B3261E; color: #B3261E; }
+a.subject-chip { transition: background 0.2s, border-color 0.2s; }
+a.subject-chip:hover { background: rgba(19, 184, 166, 0.12); border-color: var(--teal); }
