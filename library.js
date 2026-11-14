@@ -686,8 +686,14 @@ async function start() {
         new URLSearchParams(window.location.search).get("q");
 
     if (startingQuery) {
-        libraryInput.value = startingQuery.slice(0, 200);
-        currentQuery = libraryInput.value.trim();
+        const cleanQuery = startingQuery.slice(0, 200).trim();
+
+        // Search both collections with the same words
+        kenyanSearchInput.value = cleanQuery;
+        filterKenyanBooks();
+
+        libraryInput.value = cleanQuery;
+        currentQuery = cleanQuery;
 
         if (currentQuery) {
             runSearch(currentQuery, 1);
