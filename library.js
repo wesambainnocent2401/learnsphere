@@ -1,4 +1,3 @@
-
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const SEARCH_URL = "https://openlibrary.org/search.json";
@@ -283,18 +282,22 @@ async function runSearch(query, page) {
 function populateKenyanSubjects() {
     kenyanSubject.replaceChildren();
 
-    addOption(
-        kenyanSubject,
-        "",
-        "All subjects"
-    );
+    addOption(kenyanSubject, "", "All subjects");
+
+    const names = new Set();
 
     kenyanSubjects.forEach(function (subject) {
-        addOption(
-            kenyanSubject,
-            subject.id,
-            subject.name
-        );
+        names.add(subject.name);
+    });
+
+    kenyanBooks.forEach(function (book) {
+        if (book.subject_name) {
+            names.add(book.subject_name);
+        }
+    });
+
+    Array.from(names).sort().forEach(function (name) {
+        addOption(kenyanSubject, name, name);
     });
 }
 
@@ -517,7 +520,7 @@ function filterKenyanBooks() {
 
         const matchesSubject =
             !selectedSubject ||
-            book.subject_id === selectedSubject;
+            book.subject_name === selectedSubject;
 
         return matchesSearch &&
             matchesCategory &&
@@ -563,9 +566,10 @@ async function loadKenyanBooks() {
         db
             .from("resources")
             .select(
-                "title, description, author, resource_type, subject_id, language, publication_year, cover_url, source_name, source_url, licence, access_type, file_path, download_allowed"
+                "title, description, author, resource_type, subject_id, subject_name, language, publication_year, cover_url, source_name, source_url, licence, access_type, file_path, download_allowed"
             )
             .eq("approval_status", "approved")
+            .eq("country_code", "KE")
             .limit(200)
     ]);
 
@@ -593,7 +597,7 @@ async function loadKenyanBooks() {
     kenyanBooks = (resources || []).map(function (book) {
         return {
             ...book,
-            subject_name: subjectNames.get(book.subject_id) || ""
+            subject_name: book.subject_name || subjectNames.get(book.subject_id) || ""
         };
     });
 
