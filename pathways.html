@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Structured learning pathways with lessons and progress tracking.">
+    <title>Learning Pathways | LearnSphere</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">Learn<span>Sphere</span></a>
+            <nav class="main-nav">
+                <a href="explore.html">Explore</a>
+                <a href="pathways.html">Pathways</a>
+                <a href="quizzes.html">Quizzes</a>
+            </nav>
+            <a href="login.html" class="header-button">Log in</a>
+        </div>
+    </header>
+
+    <main class="library-page">
+        <div class="container">
+            <p class="eyebrow">LEARNING PATHWAYS</p>
+            <h1 id="pathTitle">Learn step by step</h1>
+            <p class="dash-sub" id="pathDescription"></p>
+            <p class="status-line" id="pathStatus">Loading...</p>
+
+            <div id="progressArea" hidden>
+                <p id="progressText"></p>
+                <div class="progress-bar"><span id="progressFill" style="width:0%"></span></div>
+                <button type="button" class="small-button" id="enrolButton" hidden>Enrol in this pathway</button>
+            </div>
+
+            <div class="quiz-list" id="pathList"></div>
+            <div id="lessonList"></div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="pathways.js"></script>
+</body>
+</html>
