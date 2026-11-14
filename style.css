@@ -1199,3 +1199,42 @@ a.subject-chip:hover { background: rgba(19, 184, 166, 0.12); border-color: var(-
 }
 .small-button.danger { border-color: #B3261E; color: #B3261E; }
 .field-hint { color: var(--muted); font-size: 0.8rem; margin-top: 4px; }
+/* Pathways and lessons */
+.progress-bar { height: 10px; background: var(--border); border-radius: 999px; overflow: hidden; margin: 8px 0 14px; }
+.progress-bar span { display: block; height: 100%; background: var(--teal); }
+.lesson-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+.lesson-row .lesson-number {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg);
+  font-weight: 700;
+  color: var(--navy);
+  flex-shrink: 0;
+}
+.lesson-row.done .lesson-number { background: var(--teal); color: var(--navy); }
+.lesson-row small { color: var(--muted); display: block; }
+.lesson-content p { margin-bottom: 14px; font-size: 1.02rem; }
+.lesson-content ul { padding-left: 20px; margin-bottom: 14px; }
+.lesson-nav { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.lesson-nav a, .lesson-nav button {
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: 2px solid var(--teal);
+  background: transparent;
+  color: var(--teal-dark);
+  font-weight: 700;
+  cursor: pointer;
+}
+.lesson-nav .primary { background: var(--teal); color: var(--navy); }
