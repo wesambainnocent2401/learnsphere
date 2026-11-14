@@ -1177,3 +1177,25 @@ a.subject-chip:hover { background: rgba(19, 184, 166, 0.12); border-color: var(-
   margin-bottom: 18px;
 }
 .history-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+/* Quiz builder */
+.builder-question {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-top: 16px;
+  background: var(--bg);
+}
+.builder-question h3 { font-size: 0.95rem; margin-bottom: 6px; }
+.builder-question textarea { min-height: 80px; }
+.builder-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.small-button {
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: 2px solid var(--teal);
+  background: transparent;
+  color: var(--teal-dark);
+  font-weight: 700;
+  cursor: pointer;
+}
+.small-button.danger { border-color: #B3261E; color: #B3261E; }
+.field-hint { color: var(--muted); font-size: 0.8rem; margin-top: 4px; }
