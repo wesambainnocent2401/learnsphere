@@ -1274,3 +1274,31 @@ a.subject-chip:hover { background: rgba(19, 184, 166, 0.12); border-color: var(-
   cursor: pointer;
 }
 .chat-form button:disabled { opacity: 0.6; cursor: not-allowed; }
+/* Pricing */
+.plan-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 18px; }
+.plan-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.plan-card.featured { border: 2px solid var(--teal); }
+.plan-price { font-size: 1.9rem; font-weight: 800; color: var(--navy); }
+.plan-price small { font-size: 0.9rem; font-weight: 500; color: var(--muted); }
+.plan-card ul { padding-left: 20px; color: var(--text); font-size: 0.95rem; }
+.plan-card li { margin-bottom: 4px; }
+.plan-button {
+  margin-top: auto;
+  padding: 12px;
+  border-radius: 999px;
+  border: 2px solid var(--teal);
+  background: transparent;
+  color: var(--teal-dark);
+  font-weight: 700;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
