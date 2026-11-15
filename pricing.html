@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="LearnSphere plans: free learning for everyone, with an optional Plus plan.">
+    <title>Pricing | LearnSphere</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">Learn<span>Sphere</span></a>
+            <nav class="main-nav">
+                <a href="explore.html">Explore</a>
+                <a href="library.html">Library</a>
+                <a href="pricing.html">Pricing</a>
+            </nav>
+            <a href="login.html" class="header-button">Log in</a>
+        </div>
+    </header>
+
+    <main class="library-page">
+        <div class="container">
+            <p class="eyebrow">PLANS</p>
+            <h1>Learning for everyone</h1>
+            <p class="dash-sub">The core of LearnSphere is free. Paid plans add extra tools.</p>
+
+            <p class="status-line" id="planStatus">Loading plans...</p>
+
+            <div class="plan-grid" id="planGrid">
+                <article class="plan-card">
+                    <h3>Free Explorer</h3>
+                    <div class="plan-price">Free</div>
+                    <ul>
+                        <li>Account and personal library</li>
+                        <li>Free resources and bookmarks</li>
+                        <li>Selected quizzes and pathways</li>
+                        <li>Limited AI study help</li>
+                    </ul>
+                    <a class="plan-button" href="register.html" style="cursor:pointer;opacity:1">Get started</a>
+                </article>
+            </div>
+
+            <p class="notice-box">
+                Payments are not open yet. When they are, you will be able to pay with M-PESA and cards.
+                Your access only changes after your payment is confirmed by our payment provider,
+                never just because you returned to a page.
+            </p>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="pricing.js"></script>
+</body>
+</html>
