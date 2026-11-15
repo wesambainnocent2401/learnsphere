@@ -1303,3 +1303,4 @@ a.subject-chip:hover { background: rgba(19, 184, 166, 0.12); border-color: var(-
   opacity: 0.7;
 }
 a.plan-button { text-align: center; text-decoration: none; cursor: pointer; opacity: 1; }
+.finance-heading { margin-top: 28px; }.history-heading { margin-top: 32px; }
