@@ -23,7 +23,7 @@ const kenyanSubject = document.getElementById("kenyanSubject");
 const kenyanBookStatus = document.getElementById("kenyanBookStatus");
 const kenyanBookGrid = document.getElementById("kenyanBookGrid");
 
-// Application state
+// State
 let session = null;
 let savedKeys = new Set();
 
@@ -36,7 +36,23 @@ let internationalBooks = [];
 let kenyanBooks = [];
 let kenyanSubjects = [];
 let kenyanSearchResults = [];
-let kenyanSearchPage = 0;
+
+// Verified Kenyan catalogue record.
+// This is a catalogue entry, NOT a downloadable ebook.
+const knownKenyanBooks = [
+    {
+        id: "kenya-isbn-9789966657534",
+        title: "The Samaritan",
+        author: "John Lara",
+        year: "2022",
+        isbn: "9789966657534",
+        publisher: "Kenya Literature Bureau",
+        subjects: ["Literature", "Fiction"],
+        category: "set_book",
+        source: "Kenyan Library Catalogue",
+        sourceUrl: "https://library.mmarau.ac.ke/bib/33365"
+    }
+];
 
 // --------------------------------------------------
 // GENERAL HELPERS
@@ -45,7 +61,9 @@ let kenyanSearchPage = 0;
 function makeElement(tag, className, text) {
     const node = document.createElement(tag);
 
-    if (className) node.className = className;
+    if (className) {
+        node.className = className;
+    }
 
     if (text !== undefined && text !== null) {
         node.textContent = text;
@@ -76,18 +94,23 @@ function safeExternalUrl(value) {
 
     try {
         const url = new URL(value);
-
         return url.protocol === "https:" ? url.href : null;
     } catch (error) {
         return null;
     }
 }
 
+function normaliseText(value) {
+    return String(value || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "");
+}
+
 // --------------------------------------------------
-// CATEGORY DETECTION
+// INTERNATIONAL CATEGORY DETECTION
 // --------------------------------------------------
 
-function detectCategory(subjects) {
+function detectInternationalCategory(subjects) {
     const text = (subjects || []).join(" ").toLowerCase();
 
     const rules = [
@@ -133,6 +156,51 @@ function detectCategory(subjects) {
 }
 
 // --------------------------------------------------
+// KENYAN CATEGORY DETECTION
+// --------------------------------------------------
+
+// These values match the actual Kenyan HTML dropdown.
+function detectKenyanCategory(book) {
+    const title = normaliseText(book.title);
+    const subjects = (book.subjects || []).join(" ").toLowerCase();
+    const description = String(book.description || "").toLowerCase();
+    const text = title + " " + subjects + " " + description;
+
+    // Known Kenyan set books must be classified accurately.
+    const knownBook = knownKenyanBooks.find(function (item) {
+        return normaliseText(item.title) === title;
+    });
+
+    if (knownBook) return knownBook.category;
+
+    if (
+        text.includes("revision") ||
+        text.includes("exam preparation") ||
+        text.includes("past paper")
+    ) {
+        return "revision";
+    }
+
+    if (
+        text.includes("textbook") ||
+        text.includes("text book")
+    ) {
+        return "textbook";
+    }
+
+    if (
+        text.includes("university textbook") ||
+        text.includes("college textbook") ||
+        text.includes("higher education")
+    ) {
+        return "university";
+    }
+
+    // Do not label every novel as a Kenyan set book.
+    return "other";
+}
+
+// --------------------------------------------------
 // INTERNATIONAL LIBRARY
 // --------------------------------------------------
 
@@ -146,10 +214,6 @@ function accessLabel(access) {
     }
 
     return { text: "Catalogue only", css: "access-badge catalogue" };
-}
-
-function getInternationalCategory(book) {
-    return detectCategory(book.subject);
 }
 
 function getInternationalSubject(book) {
@@ -286,7 +350,9 @@ function makeInternationalCard(book) {
         makeElement(
             "p",
             "book-meta",
-            "Category: " + formatLabel(getInternationalCategory(book))
+            "Category: " + formatLabel(
+                detectInternationalCategory(book.subject)
+            )
         )
     );
 
@@ -309,7 +375,6 @@ function makeInternationalCard(book) {
     }
 
     const access = accessLabel(book.ebook_access);
-
     info.append(makeElement("span", access.css, access.text));
 
     link.append(cover, info);
@@ -337,10 +402,12 @@ function displayInternationalBooks() {
 
     const filtered = internationalBooks.filter(function (book) {
         const matchesCategory =
-            !category || getInternationalCategory(book) === category;
+            !category ||
+            detectInternationalCategory(book.subject) === category;
 
         const matchesSubject =
-            !subject || (book.subject || []).includes(subject);
+            !subject ||
+            (book.subject || []).includes(subject);
 
         return matchesCategory && matchesSubject;
     });
@@ -415,7 +482,7 @@ async function runInternationalSearch(query, page) {
 }
 
 // --------------------------------------------------
-// KENYAN COLLECTION: SUPABASE
+// KENYAN BOOKS: SUPABASE
 // --------------------------------------------------
 
 function populateKenyanSubjects() {
@@ -424,26 +491,32 @@ function populateKenyanSubjects() {
     kenyanSubject.replaceChildren();
     addOption(kenyanSubject, "", "All subjects");
 
-    const names = new Set();
+    const subjects = new Set();
 
     kenyanSubjects.forEach(function (subject) {
-        names.add(subject.name);
+        subjects.add(subject.name);
     });
 
     kenyanBooks.forEach(function (book) {
-        if (book.subject_name) names.add(book.subject_name);
+        if (book.subject_name) subjects.add(book.subject_name);
     });
 
-    Array.from(names).sort().forEach(function (name) {
+    kenyanSearchResults.forEach(function (book) {
+        (book.subjects || []).forEach(function (subject) {
+            if (subject) subjects.add(subject);
+        });
+    });
+
+    Array.from(subjects).sort().slice(0, 200).forEach(function (name) {
         addOption(kenyanSubject, name, name);
     });
 
-    if (names.has(selected)) {
+    if (subjects.has(selected)) {
         kenyanSubject.value = selected;
     }
 }
 
-function makeKenyanCard(book) {
+function makeKenyanLocalCard(book) {
     const card = makeElement("article", "book-result");
     const cover = makeElement("div", "book-cover");
 
@@ -490,13 +563,12 @@ function makeKenyanCard(book) {
             makeElement(
                 "p",
                 "book-meta",
-                "Published " + book.publication_year
+                "Published: " + book.publication_year
             )
         );
     }
 
     info.append(makeElement("span", "access-badge", "LearnSphere"));
-
     card.append(cover, info);
 
     if (book.source_name) {
@@ -508,11 +580,11 @@ function makeKenyanCard(book) {
     const sourceUrl = safeExternalUrl(book.source_url);
 
     if (sourceUrl) {
-        const readLink = makeElement("a", "resource-link", "Open resource");
-        readLink.href = sourceUrl;
-        readLink.target = "_blank";
-        readLink.rel = "noopener noreferrer";
-        card.append(readLink);
+        const link = makeElement("a", "resource-link", "Open resource");
+        link.href = sourceUrl;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        card.append(link);
     }
 
     if (book.download_allowed === true && book.file_path && session) {
@@ -577,7 +649,7 @@ async function loadKenyanCatalogue() {
         db
             .from("resources")
             .select(
-                "title, description, author, resource_type, subject_id, language, publication_year, cover_url, source_name, source_url, licence, access_type, file_path, download_allowed, approval_status"
+                "title, description, author, resource_type, subject_id, language, publication_year, cover_url, source_name, source_url, licence, access_type, file_path, download_allowed"
             )
             .eq("approval_status", "approved")
             .limit(200)
@@ -605,16 +677,19 @@ async function loadKenyanCatalogue() {
 }
 
 // --------------------------------------------------
-// KENYAN COLLECTION: EXTERNAL CATALOGUES
+// KENYAN BOOKS: EXTERNAL SOURCES
 // --------------------------------------------------
 
 function normaliseOpenLibraryBook(book) {
+    const subjects = Array.isArray(book.subject) ? book.subject : [];
+
     return {
         id: "ol:" + book.key,
         title: book.title || "Untitled book",
         author: book.author_name ? book.author_name[0] : "Unknown author",
-        year: book.first_publish_year || null,
-        subjects: Array.isArray(book.subject) ? book.subject : [],
+        year: book.first_publish_year || "",
+        subjects: subjects,
+        category: "other",
         cover: Number.isInteger(book.cover_i)
             ? "https://covers.openlibrary.org/b/id/" + book.cover_i + "-M.jpg"
             : null,
@@ -622,60 +697,54 @@ function normaliseOpenLibraryBook(book) {
         sourceUrl: book.key
             ? "https://openlibrary.org" + book.key
             : null,
-        category: detectCategory(book.subject || [])
+        isbn: Array.isArray(book.isbn) ? book.isbn[0] : ""
     };
 }
 
 function normaliseGoogleBook(item) {
     const volume = item.volumeInfo || {};
     const imageLinks = volume.imageLinks || {};
-
     const subjects = Array.isArray(volume.categories)
         ? volume.categories
         : [];
 
     let cover = imageLinks.thumbnail || imageLinks.smallThumbnail || null;
 
-    if (cover) {
-        cover = cover.replace(/^http:/, "https:");
-    }
+    if (cover) cover = cover.replace(/^http:/, "https:");
 
     return {
         id: "gb:" + item.id,
         title: volume.title || "Untitled book",
         author: volume.authors ? volume.authors[0] : "Unknown author",
-        year: volume.publishedDate || null,
+        year: volume.publishedDate || "",
         subjects: subjects,
+        category: "other",
         cover: safeExternalUrl(cover),
         source: "Google Books",
         sourceUrl: safeExternalUrl(volume.infoLink || volume.previewLink),
-        category: detectCategory(subjects)
+        isbn: ""
     };
 }
 
-async function searchOpenLibrary(query, page) {
+async function searchOpenLibrary(query) {
     const params = new URLSearchParams({
         q: query,
         limit: "20",
-        page: String(page),
-        fields: "key,title,author_name,first_publish_year,cover_i,subject"
+        fields: "key,title,author_name,first_publish_year,cover_i,subject,isbn"
     });
 
     const response = await fetch(SEARCH_URL + "?" + params.toString());
 
-    if (!response.ok) {
-        throw new Error("Open Library search failed.");
-    }
+    if (!response.ok) throw new Error("Open Library search failed.");
 
     const result = await response.json();
 
     return (result.docs || []).map(normaliseOpenLibraryBook);
 }
 
-async function searchGoogleBooks(query, page) {
+async function searchGoogleBooks(query) {
     const params = new URLSearchParams({
         q: query,
-        startIndex: String((page - 1) * 20),
         maxResults: "20",
         printType: "books"
     });
@@ -684,22 +753,35 @@ async function searchGoogleBooks(query, page) {
         GOOGLE_BOOKS_URL + "?" + params.toString()
     );
 
-    if (!response.ok) {
-        throw new Error("Google Books search failed.");
-    }
+    if (!response.ok) throw new Error("Google Books search failed.");
 
     const result = await response.json();
 
     return (result.items || []).map(normaliseGoogleBook);
 }
 
+function findKnownKenyanBooks(query) {
+    const search = normaliseText(query);
+
+    return knownKenyanBooks.filter(function (book) {
+        return (
+            normaliseText(book.title).includes(search) ||
+            search.includes(normaliseText(book.title)) ||
+            normaliseText(book.author).includes(search) ||
+            book.isbn.includes(search)
+        );
+    });
+}
+
 function makeExternalKenyanCard(book) {
     const card = makeElement("article", "book-result");
     const cover = makeElement("div", "book-cover");
 
-    if (book.cover) {
+    const coverUrl = safeExternalUrl(book.cover);
+
+    if (coverUrl) {
         const image = document.createElement("img");
-        image.src = book.cover;
+        image.src = coverUrl;
         image.alt = "Cover of " + book.title;
         image.loading = "lazy";
         cover.append(image);
@@ -728,39 +810,48 @@ function makeExternalKenyanCard(book) {
         )
     );
 
-    if (book.year) {
+    if (book.publisher) {
         info.append(
-            makeElement("p", "book-meta", "Published: " + book.year)
+            makeElement("p", "book-meta", "Publisher: " + book.publisher)
         );
     }
 
-    info.append(
-        makeElement("span", "access-badge", book.source)
-    );
+    if (book.year) {
+        info.append(
+            makeElement("p", "book-meta", "Year: " + book.year)
+        );
+    }
 
+    if (book.isbn) {
+        info.append(
+            makeElement("p", "book-meta", "ISBN: " + book.isbn)
+        );
+    }
+
+    info.append(makeElement("span", "access-badge", book.source));
     card.append(cover, info);
 
     if (book.sourceUrl) {
-        const link = makeElement("a", "resource-link", "View book");
+        const link = makeElement("a", "resource-link", "View catalogue record");
         link.href = book.sourceUrl;
         link.target = "_blank";
         link.rel = "noopener noreferrer";
         card.append(link);
-    } else {
-        card.append(
-            makeElement("p", "book-meta", "Catalogue record only")
-        );
     }
 
     return card;
 }
 
+// --------------------------------------------------
+// KENYAN SEARCH AND FILTERING
+// --------------------------------------------------
+
 function renderKenyanResults() {
     const searchTerm = kenyanSearchInput.value.trim().toLowerCase();
-    const category = kenyanCategory.value;
-    const subject = kenyanSubject.value;
+    const selectedCategory = kenyanCategory.value;
+    const selectedSubject = kenyanSubject.value;
 
-    const allBooks = kenyanBooks.map(function (book) {
+    const localResults = kenyanBooks.map(function (book) {
         return {
             kind: "local",
             book: book,
@@ -769,34 +860,38 @@ function renderKenyanResults() {
             subjects: [book.subject_name || ""],
             category: book.resource_type || "other"
         };
-    }).concat(
-        kenyanSearchResults.map(function (book) {
-            return {
-                kind: "external",
-                book: book,
-                title: book.title,
-                author: book.author,
-                subjects: book.subjects,
-                category: book.category
-            };
-        })
-    );
+    });
 
-    const filtered = allBooks.filter(function (item) {
+    const externalResults = kenyanSearchResults.map(function (book) {
+        return {
+            kind: "external",
+            book: book,
+            title: book.title,
+            author: book.author,
+            subjects: book.subjects || [],
+            category: book.category || "other"
+        };
+    });
+
+    const allResults = localResults.concat(externalResults);
+
+    const filtered = allResults.filter(function (item) {
         const searchable = [
             item.title,
             item.author,
             item.subjects.join(" ")
         ].join(" ").toLowerCase();
 
-        const matchesSearch = !searchTerm ||
-            searchable.includes(searchTerm);
+        const matchesSearch =
+            !searchTerm || searchable.includes(searchTerm);
 
-        const matchesCategory = !category ||
-            item.category === category;
+        const matchesCategory =
+            !selectedCategory || item.category === selectedCategory;
 
-        const matchesSubject = !subject ||
-            item.subjects.includes(subject);
+        const matchesSubject =
+            !selectedSubject || item.subjects.some(function (subject) {
+                return subject.toLowerCase() === selectedSubject.toLowerCase();
+            });
 
         return matchesSearch && matchesCategory && matchesSubject;
     });
@@ -805,14 +900,13 @@ function renderKenyanResults() {
 
     if (!filtered.length) {
         kenyanBookStatus.textContent =
-            "No matching books found. Try another search.";
-
+            "No matching books found. Try another search or filter.";
         return;
     }
 
     filtered.forEach(function (item) {
         if (item.kind === "local") {
-            kenyanBookGrid.append(makeKenyanCard(item.book));
+            kenyanBookGrid.append(makeKenyanLocalCard(item.book));
         } else {
             kenyanBookGrid.append(makeExternalKenyanCard(item.book));
         }
@@ -823,67 +917,66 @@ function renderKenyanResults() {
         " results from LearnSphere and external catalogues.";
 }
 
-function populateKenyanSearchSubjects() {
-    const selected = kenyanSubject.value;
+async function searchKenyanBooks(query) {
+    kenyanBookStatus.textContent =
+        "Searching LearnSphere and external catalogues...";
 
-    kenyanSubject.replaceChildren();
-    addOption(kenyanSubject, "", "All subjects");
+    kenyanSearchResults = [];
 
-    const subjects = new Set();
-
-    kenyanBooks.forEach(function (book) {
-        if (book.subject_name) subjects.add(book.subject_name);
-    });
-
-    kenyanSearchResults.forEach(function (book) {
-        (book.subjects || []).forEach(function (name) {
-            if (name) subjects.add(name);
-        });
-    });
-
-    Array.from(subjects).sort().slice(0, 200).forEach(function (name) {
-        addOption(kenyanSubject, name, name);
-    });
-
-    if (subjects.has(selected)) {
-        kenyanSubject.value = selected;
-    }
-}
-
-async function searchKenyanBooks(query, page) {
-    kenyanBookStatus.textContent = "Searching LearnSphere and external catalogues...";
-    kenyanSearchPage = page;
-
-    if (page === 1) {
-        kenyanSearchResults = [];
-    }
-
-    const searches = await Promise.allSettled([
-        searchOpenLibrary(query, page),
-        searchGoogleBooks(query, page)
+    const results = await Promise.allSettled([
+        searchOpenLibrary(query),
+        searchGoogleBooks(query)
     ]);
 
-    let externalResults = [];
-    let failedSources = [];
+    let externalBooks = [];
+    const failedSources = [];
 
-    searches.forEach(function (result, index) {
+    results.forEach(function (result, index) {
         if (result.status === "fulfilled") {
-            externalResults = externalResults.concat(result.value);
+            externalBooks = externalBooks.concat(result.value);
         } else {
-            failedSources.push(index === 0 ? "Open Library" : "Google Books");
+            failedSources.push(
+                index === 0 ? "Open Library" : "Google Books"
+            );
             console.error(result.reason);
         }
     });
 
-    kenyanSearchResults = kenyanSearchResults.concat(externalResults);
+    // Add known Kenyan catalogue records when the query matches.
+    const knownBooks = findKnownKenyanBooks(query);
 
-    populateKenyanSearchSubjects();
+    // Remove duplicate external records by title + author.
+    const seen = new Set();
+
+    externalBooks.forEach(function (book) {
+        const key =
+            normaliseText(book.title) + "|" +
+            normaliseText(book.author);
+
+        if (!seen.has(key)) {
+            seen.add(key);
+            book.category = detectKenyanCategory(book);
+            kenyanSearchResults.push(book);
+        }
+    });
+
+    knownBooks.forEach(function (book) {
+        const key =
+            normaliseText(book.title) + "|" +
+            normaliseText(book.author);
+
+        if (!seen.has(key)) {
+            seen.add(key);
+            kenyanSearchResults.unshift(book);
+        }
+    });
+
+    populateKenyanSubjects();
     renderKenyanResults();
 
     if (failedSources.length) {
         kenyanBookStatus.textContent +=
-            " Some sources could not be reached: " +
-            failedSources.join(", ") + ".";
+            " Unavailable sources: " + failedSources.join(", ") + ".";
     }
 }
 
@@ -954,7 +1047,7 @@ kenyanSearchForm.addEventListener("submit", function (event) {
         return;
     }
 
-    searchKenyanBooks(query, 1);
+    searchKenyanBooks(query);
 });
 
 kenyanSearchInput.addEventListener("input", function () {
@@ -968,7 +1061,7 @@ kenyanCategory.addEventListener("change", renderKenyanResults);
 kenyanSubject.addEventListener("change", renderKenyanResults);
 
 // --------------------------------------------------
-// START
+// START THE LIBRARY
 // --------------------------------------------------
 
 async function start() {
@@ -988,9 +1081,10 @@ async function start() {
             kenyanSearchInput.value = query;
             libraryInput.value = query;
 
-            searchKenyanBooks(query, 1);
+            searchKenyanBooks(query);
             runInternationalSearch(query, 1);
         }
+
     } catch (error) {
         console.error("Library startup error:", error);
 
