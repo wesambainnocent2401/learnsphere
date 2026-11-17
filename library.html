@@ -8,7 +8,6 @@
     <title>Digital Library | LearnSphere</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
     <header class="site-header">
@@ -28,14 +27,11 @@
     </header>
 
     <main class="library-page">
-
         <div class="container">
 
             <!-- Kenyan Books Collection -->
             <section class="kenyan-books-section">
-
                 <p class="eyebrow">MADE FOR KENYAN LEARNERS</p>
-
                 <h1>Kenyan Books Collection</h1>
 
                 <p class="section-description">
@@ -44,7 +40,6 @@
                 </p>
 
                 <form id="kenyanSearchForm" class="library-form">
-
                     <input
                         type="search"
                         id="kenyanSearchInput"
@@ -52,93 +47,86 @@
                         placeholder="Search Kenyan books or authors..."
                         aria-label="Search Kenyan books"
                     >
-
                     <button type="submit">Search</button>
-
                 </form>
 
                 <div class="kenyan-book-filters">
+                    <label for="kenyanCategory">Book category</label>
+                    <select id="kenyanCategory">
+                        <option value="">All categories</option>
+                        <option value="set_book">Set books</option>
+                        <option value="textbook">Textbooks</option>
+                        <option value="revision">Revision materials</option>
+                        <option value="university">University books</option>
+                        <option value="other">Other</option>
+                    </select>
 
-                    <label for="kenyanCategory">
-                        Book category
-                    </label>
-
-                <select id="kenyanCategory">
-    <option value="">All categories</option>
-    <option value="textbook">Textbooks</option>
-    <option value="reference_book">Reference books</option>
-    <option value="revision_notes">Revision notes</option>
-    <option value="past_paper">Past papers</option>
-    <option value="marking_scheme">Marking schemes</option>
-    <option value="study_guide">Study guides</option>
-    <option value="lecture_notes">Lecture notes</option>
-    <option value="open_educational_resource">Open resources</option>
-                </select>
-                        
-                        
-                        <label for="kenyanSubject">
-                        Subject
-                    </label>
-
+                    <label for="kenyanSubject">Subject</label>
                     <select id="kenyanSubject">
                         <option value="">All subjects</option>
                     </select>
-
                 </div>
 
-                <p
-                    class="status-line"
-                    id="kenyanBookStatus"
-                    aria-live="polite"
-                >
+                <p class="status-line" id="kenyanBookStatus" aria-live="polite">
                     Loading Kenyan books...
                 </p>
 
-                <div
-                    class="book-grid"
-                    id="kenyanBookGrid"
-                ></div>
-
+                <div class="book-grid" id="kenyanBookGrid"></div>
             </section>
 
             <!-- International Library -->
             <section class="international-library-section">
-
                 <p class="eyebrow">EXPLORE THE WORLD</p>
 
                 <h2>International Digital Library</h2>
 
                 <p class="section-description">
-                    Search international books, discover authors
-                    and find legitimate reading and borrowing options.
+                    Discover books, authors and learning materials
+                    from around the world.
                 </p>
 
                 <form class="library-form" id="libraryForm">
-
                     <input
                         type="search"
                         id="libraryInput"
                         maxlength="200"
-                        placeholder="Try: calculus, python, kiswahili"
-                        aria-label="Search the international library"
+                        placeholder="Search international books or authors..."
+                        aria-label="Search international books"
                     >
-
                     <button type="submit">Search</button>
-
                 </form>
 
-                <p
-                    class="status-line"
-                    id="libraryStatus"
-                    aria-live="polite"
-                >
-                    Type a subject, title or author to begin.
+                <div class="kenyan-book-filters">
+                    <label for="internationalCategory">
+                        Book category
+                    </label>
+
+                    <select id="internationalCategory">
+                        <option value="">All categories</option>
+                        <option value="mathematics">Mathematics</option>
+                        <option value="science">Science</option>
+                        <option value="technology">Technology</option>
+                        <option value="literature">Literature</option>
+                        <option value="business">Business</option>
+                        <option value="history">History</option>
+                        <option value="education">Education</option>
+                        <option value="other">Other</option>
+                    </select>
+
+                    <label for="internationalSubject">
+                        Subject
+                    </label>
+
+                    <select id="internationalSubject">
+                        <option value="">All subjects</option>
+                    </select>
+                </div>
+
+                <p class="status-line" id="libraryStatus" aria-live="polite">
+                    Search for a book to begin.
                 </p>
 
-                <div
-                    class="book-grid"
-                    id="bookGrid"
-                ></div>
+                <div class="book-grid" id="bookGrid"></div>
 
                 <button
                     type="button"
@@ -156,11 +144,9 @@
                     own access and licence rules.
                     LearnSphere does not host these books.
                 </p>
-
             </section>
 
         </div>
-
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
