@@ -2,10 +2,11 @@
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const SEARCH_URL = "https://openlibrary.org/search.json";
+const GOOGLE_BOOKS_URL = "https://www.googleapis.com/books/v1/volumes";
 const STORAGE_BUCKET = "learning-materials";
 const PAGE_SIZE = 20;
 
-// International library elements
+// International library
 const libraryForm = document.getElementById("libraryForm");
 const libraryInput = document.getElementById("libraryInput");
 const libraryStatus = document.getElementById("libraryStatus");
@@ -14,7 +15,7 @@ const moreButton = document.getElementById("moreButton");
 const internationalCategory = document.getElementById("internationalCategory");
 const internationalSubject = document.getElementById("internationalSubject");
 
-// Kenyan library elements
+// Kenyan library
 const kenyanSearchForm = document.getElementById("kenyanSearchForm");
 const kenyanSearchInput = document.getElementById("kenyanSearchInput");
 const kenyanCategory = document.getElementById("kenyanCategory");
@@ -22,19 +23,20 @@ const kenyanSubject = document.getElementById("kenyanSubject");
 const kenyanBookStatus = document.getElementById("kenyanBookStatus");
 const kenyanBookGrid = document.getElementById("kenyanBookGrid");
 
-// International search state
+// Application state
+let session = null;
+let savedKeys = new Set();
+
 let currentQuery = "";
 let currentPage = 1;
 let totalFound = 0;
 let shownCount = 0;
-let session = null;
 let internationalBooks = [];
 
-const savedKeys = new Set();
-
-// Kenyan catalogue state
 let kenyanBooks = [];
 let kenyanSubjects = [];
+let kenyanSearchResults = [];
+let kenyanSearchPage = 0;
 
 // --------------------------------------------------
 // GENERAL HELPERS
@@ -43,9 +45,7 @@ let kenyanSubjects = [];
 function makeElement(tag, className, text) {
     const node = document.createElement(tag);
 
-    if (className) {
-        node.className = className;
-    }
+    if (className) node.className = className;
 
     if (text !== undefined && text !== null) {
         node.textContent = text;
@@ -64,11 +64,72 @@ function addOption(select, value, label) {
 function formatLabel(value) {
     if (!value) return "Other";
 
-    return value
+    return String(value)
         .replace(/_/g, " ")
         .replace(/\b\w/g, function (letter) {
             return letter.toUpperCase();
         });
+}
+
+function safeExternalUrl(value) {
+    if (!value) return null;
+
+    try {
+        const url = new URL(value);
+
+        return url.protocol === "https:" ? url.href : null;
+    } catch (error) {
+        return null;
+    }
+}
+
+// --------------------------------------------------
+// CATEGORY DETECTION
+// --------------------------------------------------
+
+function detectCategory(subjects) {
+    const text = (subjects || []).join(" ").toLowerCase();
+
+    const rules = [
+        {
+            value: "mathematics",
+            words: ["mathematics", "algebra", "calculus", "geometry", "statistics"]
+        },
+        {
+            value: "science",
+            words: ["science", "physics", "chemistry", "biology", "astronomy"]
+        },
+        {
+            value: "technology",
+            words: ["computer", "programming", "software", "technology", "engineering"]
+        },
+        {
+            value: "literature",
+            words: ["literature", "fiction", "poetry", "novel", "drama"]
+        },
+        {
+            value: "business",
+            words: ["business", "economics", "management", "accounting", "finance"]
+        },
+        {
+            value: "history",
+            words: ["history", "historical", "civilization"]
+        },
+        {
+            value: "education",
+            words: ["education", "teaching", "learning", "school"]
+        }
+    ];
+
+    for (const rule of rules) {
+        if (rule.words.some(function (word) {
+            return text.includes(word);
+        })) {
+            return rule.value;
+        }
+    }
+
+    return "other";
 }
 
 // --------------------------------------------------
@@ -77,85 +138,28 @@ function formatLabel(value) {
 
 function accessLabel(access) {
     if (access === "public") {
-        return {
-            text: "Free to read",
-            css: "access-badge"
-        };
+        return { text: "Free to read", css: "access-badge" };
     }
 
     if (access === "borrowable") {
-        return {
-            text: "Borrow free",
-            css: "access-badge limited"
-        };
+        return { text: "Borrow free", css: "access-badge limited" };
     }
 
-    return {
-        text: "Catalogue only",
-        css: "access-badge catalogue"
-    };
+    return { text: "Catalogue only", css: "access-badge catalogue" };
 }
 
-// Categorise books using Open Library subject information.
 function getInternationalCategory(book) {
-    const subjects = (book.subject || [])
-        .join(" ")
-        .toLowerCase();
-
-    const rules = [
-        {
-            category: "mathematics",
-            words: ["mathematics", "algebra", "calculus", "geometry", "arithmetic", "statistics"]
-        },
-        {
-            category: "science",
-            words: ["science", "physics", "chemistry", "biology", "astronomy", "botany"]
-        },
-        {
-            category: "technology",
-            words: ["computer", "programming", "technology", "software", "engineering", "internet"]
-        },
-        {
-            category: "literature",
-            words: ["literature", "fiction", "poetry", "novel", "drama", "short stories"]
-        },
-        {
-            category: "business",
-            words: ["business", "economics", "management", "accounting", "finance", "marketing"]
-        },
-        {
-            category: "history",
-            words: ["history", "historical", "civilization", "archaeology"]
-        },
-        {
-            category: "education",
-            words: ["education", "teaching", "learning", "pedagogy", "school"]
-        }
-    ];
-
-    for (const rule of rules) {
-        const matches = rule.words.some(function (word) {
-            return subjects.includes(word);
-        });
-
-        if (matches) {
-            return rule.category;
-        }
-    }
-
-    return "other";
+    return detectCategory(book.subject);
 }
 
 function getInternationalSubject(book) {
-    if (!Array.isArray(book.subject) || book.subject.length === 0) {
-        return "Not specified";
-    }
-
-    return book.subject[0];
+    return book.subject && book.subject.length
+        ? book.subject[0]
+        : "Not specified";
 }
 
 function populateInternationalSubjects() {
-    const selectedValue = internationalSubject.value;
+    const selected = internationalSubject.value;
 
     internationalSubject.replaceChildren();
     addOption(internationalSubject, "", "All subjects");
@@ -170,23 +174,20 @@ function populateInternationalSubjects() {
         });
     });
 
-    Array.from(subjects)
-        .sort()
-        .slice(0, 200)
-        .forEach(function (subject) {
-            addOption(internationalSubject, subject, subject);
-        });
+    Array.from(subjects).sort().slice(0, 200).forEach(function (subject) {
+        addOption(internationalSubject, subject, subject);
+    });
 
-    if (subjects.has(selectedValue)) {
-        internationalSubject.value = selectedValue;
+    if (subjects.has(selected)) {
+        internationalSubject.value = selected;
     }
 }
 
 function updateSaveButton(button, key) {
-    const isSaved = savedKeys.has(key);
+    const saved = savedKeys.has(key);
 
-    button.textContent = isSaved ? "Saved ✓" : "Save";
-    button.classList.toggle("saved", isSaved);
+    button.textContent = saved ? "Saved ✓" : "Save";
+    button.classList.toggle("saved", saved);
 }
 
 async function toggleSave(book, button) {
@@ -209,14 +210,13 @@ async function toggleSave(book, button) {
         } else {
             savedKeys.delete(book.key);
         }
-
     } else {
         const { error } = await db
             .from("bookmarks")
             .insert({
                 source: "openlibrary",
                 external_id: book.key,
-                title: book.title.slice(0, 300),
+                title: (book.title || "Untitled").slice(0, 300),
                 author: book.author_name
                     ? book.author_name[0].slice(0, 300)
                     : null,
@@ -236,7 +236,7 @@ async function toggleSave(book, button) {
     button.disabled = false;
 }
 
-function makeBookCard(book) {
+function makeInternationalCard(book) {
     const card = makeElement("article", "book-result");
 
     const hasWorkPage =
@@ -263,9 +263,8 @@ function makeBookCard(book) {
             "https://covers.openlibrary.org/b/id/" +
             book.cover_i + "-M.jpg";
 
-        image.alt = "Cover of " + book.title;
+        image.alt = "Book cover";
         image.loading = "lazy";
-
         cover.append(image);
     } else {
         cover.textContent = "📖";
@@ -279,9 +278,23 @@ function makeBookCard(book) {
         makeElement(
             "p",
             "book-meta",
-            book.author_name
-                ? book.author_name[0]
-                : "Unknown author"
+            book.author_name ? book.author_name[0] : "Unknown author"
+        )
+    );
+
+    info.append(
+        makeElement(
+            "p",
+            "book-meta",
+            "Category: " + formatLabel(getInternationalCategory(book))
+        )
+    );
+
+    info.append(
+        makeElement(
+            "p",
+            "book-meta",
+            "Subject: " + getInternationalSubject(book)
         )
     );
 
@@ -295,85 +308,61 @@ function makeBookCard(book) {
         );
     }
 
-    const category = getInternationalCategory(book);
-    const subject = getInternationalSubject(book);
+    const access = accessLabel(book.ebook_access);
 
-    info.append(
-        makeElement(
-            "p",
-            "book-meta",
-            "Category: " + formatLabel(category)
-        )
-    );
-
-    info.append(
-        makeElement(
-            "p",
-            "book-meta",
-            "Subject: " + subject
-        )
-    );
-
-    const label = accessLabel(book.ebook_access);
-
-    info.append(
-        makeElement("span", label.css, label.text)
-    );
+    info.append(makeElement("span", access.css, access.text));
 
     link.append(cover, info);
     card.append(link);
 
     if (hasWorkPage) {
-        const saveButton = makeElement("button", "save-button");
+        const button = makeElement("button", "save-button");
 
-        saveButton.type = "button";
-        updateSaveButton(saveButton, book.key);
+        button.type = "button";
+        updateSaveButton(button, book.key);
 
-        saveButton.addEventListener("click", function () {
-            toggleSave(book, saveButton);
+        button.addEventListener("click", function () {
+            toggleSave(book, button);
         });
 
-        card.append(saveButton);
+        card.append(button);
     }
 
     return card;
 }
 
 function displayInternationalBooks() {
-    const selectedCategory = internationalCategory.value;
-    const selectedSubject = internationalSubject.value;
+    const category = internationalCategory.value;
+    const subject = internationalSubject.value;
 
-    const filteredBooks = internationalBooks.filter(function (book) {
+    const filtered = internationalBooks.filter(function (book) {
         const matchesCategory =
-            !selectedCategory ||
-            getInternationalCategory(book) === selectedCategory;
+            !category || getInternationalCategory(book) === category;
 
         const matchesSubject =
-            !selectedSubject ||
-            (book.subject || []).includes(selectedSubject);
+            !subject || (book.subject || []).includes(subject);
 
         return matchesCategory && matchesSubject;
     });
 
     bookGrid.replaceChildren();
 
-    if (filteredBooks.length === 0) {
+    if (!filtered.length) {
         libraryStatus.textContent =
             "No books match these filters. Try another category or subject.";
-
         return;
     }
 
-    filteredBooks.forEach(function (book) {
-        bookGrid.append(makeBookCard(book));
+    filtered.forEach(function (book) {
+        bookGrid.append(makeInternationalCard(book));
     });
 
     libraryStatus.textContent =
-        "Showing " + filteredBooks.length +
+        "Showing " + filtered.length +
         " matching books from " + shownCount + " loaded results.";
 }
 
-async function fetchBooks(query, page) {
+async function fetchInternationalBooks(query, page) {
     const params = new URLSearchParams({
         q: query,
         limit: String(PAGE_SIZE),
@@ -381,61 +370,57 @@ async function fetchBooks(query, page) {
         fields: "key,title,author_name,first_publish_year,cover_i,ebook_access,subject"
     });
 
-    const response = await fetch(
-        SEARCH_URL + "?" + params.toString()
-    );
+    const response = await fetch(SEARCH_URL + "?" + params.toString());
 
     if (!response.ok) {
-        throw new Error(
-            "The international book catalogue is not responding."
-        );
+        throw new Error("Open Library is not responding.");
     }
 
     return response.json();
 }
 
-async function runSearch(query, page) {
+async function runInternationalSearch(query, page) {
     libraryStatus.textContent = "Searching...";
     moreButton.hidden = true;
 
     try {
-        const result = await fetchBooks(query, page);
+        const result = await fetchInternationalBooks(query, page);
 
         if (page === 1) {
-            bookGrid.replaceChildren();
             internationalBooks = [];
             shownCount = 0;
         }
 
         totalFound = result.numFound || 0;
 
-        const newBooks = result.docs || [];
+        const books = result.docs || [];
 
-        internationalBooks = internationalBooks.concat(newBooks);
-        shownCount += newBooks.length;
+        internationalBooks = internationalBooks.concat(books);
+        shownCount += books.length;
 
         populateInternationalSubjects();
         displayInternationalBooks();
 
-        if (totalFound === 0) {
-            libraryStatus.textContent =
-                'No books found for "' + query + '".';
+        if (!totalFound) {
+            libraryStatus.textContent = "No books found for " + query + ".";
         }
 
         moreButton.hidden =
-            shownCount >= totalFound || newBooks.length === 0;
+            shownCount >= totalFound || books.length === 0;
 
     } catch (error) {
-        console.error("International library error:", error);
+        console.error(error);
         libraryStatus.textContent = error.message;
     }
 }
 
 // --------------------------------------------------
-// KENYAN BOOKS COLLECTION
+// KENYAN COLLECTION: SUPABASE
 // --------------------------------------------------
 
 function populateKenyanSubjects() {
+    const selected = kenyanSubject.value;
+
     kenyanSubject.replaceChildren();
     addOption(kenyanSubject, "", "All subjects");
 
@@ -446,44 +431,30 @@ function populateKenyanSubjects() {
     });
 
     kenyanBooks.forEach(function (book) {
-        if (book.subject_name) {
-            names.add(book.subject_name);
-        }
+        if (book.subject_name) names.add(book.subject_name);
     });
 
     Array.from(names).sort().forEach(function (name) {
         addOption(kenyanSubject, name, name);
     });
+
+    if (names.has(selected)) {
+        kenyanSubject.value = selected;
+    }
 }
 
-function getKenyanCategory(book) {
-    return book.resource_type || "other";
-}
-
-function makeKenyanBookCard(book) {
+function makeKenyanCard(book) {
     const card = makeElement("article", "book-result");
     const cover = makeElement("div", "book-cover");
 
-    if (book.cover_url) {
-        try {
-            const coverUrl = new URL(book.cover_url);
+    const coverUrl = safeExternalUrl(book.cover_url);
 
-            if (coverUrl.protocol === "https:") {
-                const image = document.createElement("img");
-
-                image.src = coverUrl.href;
-                image.alt = "Cover of " + book.title;
-                image.loading = "lazy";
-
-                cover.append(image);
-            } else {
-                cover.textContent = "📚";
-            }
-
-        } catch (error) {
-            cover.textContent = "📚";
-        }
-
+    if (coverUrl) {
+        const image = document.createElement("img");
+        image.src = coverUrl;
+        image.alt = "Book cover";
+        image.loading = "lazy";
+        cover.append(image);
     } else {
         cover.textContent = "📚";
     }
@@ -495,10 +466,22 @@ function makeKenyanBookCard(book) {
     );
 
     info.append(
+        makeElement("p", "book-meta", book.author || "Unknown author")
+    );
+
+    info.append(
         makeElement(
             "p",
             "book-meta",
-            book.author || "Unknown author"
+            "Category: " + formatLabel(book.resource_type)
+        )
+    );
+
+    info.append(
+        makeElement(
+            "p",
+            "book-meta",
+            "Subject: " + (book.subject_name || "General learning")
         )
     );
 
@@ -512,80 +495,40 @@ function makeKenyanBookCard(book) {
         );
     }
 
-    info.append(
-        makeElement(
-            "p",
-            "book-meta",
-            "Subject: " + (book.subject_name || "General learning")
-        )
-    );
-
-    info.append(
-        makeElement(
-            "span",
-            "access-badge",
-            formatLabel(book.resource_type)
-        )
-    );
+    info.append(makeElement("span", "access-badge", "LearnSphere"));
 
     card.append(cover, info);
 
     if (book.source_name) {
         card.append(
-            makeElement(
-                "p",
-                "book-meta",
-                "Source: " + book.source_name
-            )
+            makeElement("p", "book-meta", "Source: " + book.source_name)
         );
     }
 
-    if (book.source_url) {
-        try {
-            const sourceUrl = new URL(book.source_url);
+    const sourceUrl = safeExternalUrl(book.source_url);
 
-            if (sourceUrl.protocol === "https:") {
-                const readLink = makeElement(
-                    "a",
-                    "resource-link",
-                    "Read online"
-                );
-
-                readLink.href = sourceUrl.href;
-                readLink.target = "_blank";
-                readLink.rel = "noopener noreferrer";
-
-                card.append(readLink);
-            }
-
-        } catch (error) {
-            console.warn("Invalid external book link.");
-        }
+    if (sourceUrl) {
+        const readLink = makeElement("a", "resource-link", "Open resource");
+        readLink.href = sourceUrl;
+        readLink.target = "_blank";
+        readLink.rel = "noopener noreferrer";
+        card.append(readLink);
     }
 
-    if (book.download_allowed === true && book.file_path) {
-        const downloadButton = makeElement(
-            "button",
-            "save-button",
-            "Download PDF"
-        );
+    if (book.download_allowed === true && book.file_path && session) {
+        const button = makeElement("button", "save-button", "Download PDF");
+        button.type = "button";
 
-        downloadButton.type = "button";
-
-        downloadButton.addEventListener("click", function () {
-            downloadKenyanBook(book, downloadButton);
+        button.addEventListener("click", function () {
+            downloadKenyanBook(book, button);
         });
 
-        card.append(downloadButton);
+        card.append(button);
     }
 
     if (book.licence) {
         card.append(
-            makeElement(
-                "p",
-                "book-meta",
-                "Licence: " + book.licence
-            )
+            makeElement("p", "book-meta", "Licence: " + book.licence)
         );
     }
 
@@ -593,103 +536,34 @@ function makeKenyanBookCard(book) {
 }
 
 async function downloadKenyanBook(book, button) {
-    if (!session) {
-        window.location.href = "login.html";
-        return;
-    }
-
     button.disabled = true;
     button.textContent = "Preparing download...";
 
     const { data, error } = await db.storage
         .from(STORAGE_BUCKET)
-        .createSignedUrl(
-            book.file_path,
-            60,
-            { download: true }
-        );
+        .createSignedUrl(book.file_path, 60, { download: true });
 
     if (error || !data || !data.signedUrl) {
         console.error("Download error:", error);
-
         button.textContent = "Download unavailable";
         button.disabled = false;
-
         return;
     }
 
-    const downloadLink = document.createElement("a");
+    const link = document.createElement("a");
+    link.href = data.signedUrl;
+    link.download = "";
+    link.rel = "noopener noreferrer";
 
-    downloadLink.href = data.signedUrl;
-    downloadLink.download = "";
-    downloadLink.rel = "noopener noreferrer";
-
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    downloadLink.remove();
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
 
     button.textContent = "Download PDF";
     button.disabled = false;
 }
 
-function filterKenyanBooks() {
-    const searchTerm =
-        kenyanSearchInput.value.trim().toLowerCase();
-
-    const selectedCategory = kenyanCategory.value;
-    const selectedSubject = kenyanSubject.value;
-
-    const filteredBooks = kenyanBooks.filter(function (book) {
-        const searchableText = [
-            book.title,
-            book.description,
-            book.author,
-            book.source_name,
-            book.subject_name
-        ]
-            .filter(Boolean)
-            .join(" ")
-            .toLowerCase();
-
-        const matchesSearch =
-            searchableText.includes(searchTerm);
-
-        const matchesCategory =
-            !selectedCategory ||
-            getKenyanCategory(book) === selectedCategory;
-
-        const matchesSubject =
-            !selectedSubject ||
-            book.subject_name === selectedSubject;
-
-        return matchesSearch &&
-            matchesCategory &&
-            matchesSubject;
-    });
-
-    kenyanBookGrid.replaceChildren();
-
-    if (filteredBooks.length === 0) {
-        kenyanBookStatus.textContent =
-            "No matching Kenyan books found yet.";
-
-        return;
-    }
-
-    filteredBooks.forEach(function (book) {
-        kenyanBookGrid.append(makeKenyanBookCard(book));
-    });
-
-    kenyanBookStatus.textContent =
-        "Showing " + filteredBooks.length +
-        (filteredBooks.length === 1
-            ? " Kenyan book."
-            : " Kenyan books.");
-}
-
-async function loadKenyanBooks() {
-    kenyanBookStatus.textContent = "Loading Kenyan books...";
-
+async function loadKenyanCatalogue() {
     const [
         { data: subjects, error: subjectError },
         { data: resources, error: resourceError }
@@ -703,46 +577,318 @@ async function loadKenyanBooks() {
         db
             .from("resources")
             .select(
-                "title, description, author, resource_type, subject_id, language, publication_year, cover_url, source_name, source_url, licence, access_type, file_path, download_allowed"
+                "title, description, author, resource_type, subject_id, language, publication_year, cover_url, source_name, source_url, licence, access_type, file_path, download_allowed, approval_status"
             )
             .eq("approval_status", "approved")
             .limit(200)
     ]);
 
     if (subjectError || resourceError) {
-        console.error(
-            "Kenyan books loading error:",
-            subjectError,
-            resourceError
-        );
-
-        kenyanBookStatus.textContent =
-            "Could not load Kenyan books. Please try again.";
-
-        return;
+        console.error(subjectError, resourceError);
+        throw new Error("Could not load the LearnSphere catalogue.");
     }
 
     kenyanSubjects = subjects || [];
 
-    const subjectNames = new Map();
+    const subjectMap = new Map();
 
     kenyanSubjects.forEach(function (subject) {
-        subjectNames.set(subject.id, subject.name);
+        subjectMap.set(subject.id, subject.name);
     });
 
     kenyanBooks = (resources || []).map(function (book) {
         return {
             ...book,
-            subject_name: subjectNames.get(book.subject_id) || ""
+            subject_name: subjectMap.get(book.subject_id) || ""
         };
     });
-
-    populateKenyanSubjects();
-    filterKenyanBooks();
 }
 
 // --------------------------------------------------
-// ACCOUNT AND SAVED BOOKS
+// KENYAN COLLECTION: EXTERNAL CATALOGUES
+// --------------------------------------------------
+
+function normaliseOpenLibraryBook(book) {
+    return {
+        id: "ol:" + book.key,
+        title: book.title || "Untitled book",
+        author: book.author_name ? book.author_name[0] : "Unknown author",
+        year: book.first_publish_year || null,
+        subjects: Array.isArray(book.subject) ? book.subject : [],
+        cover: Number.isInteger(book.cover_i)
+            ? "https://covers.openlibrary.org/b/id/" + book.cover_i + "-M.jpg"
+            : null,
+        source: "Open Library",
+        sourceUrl: book.key
+            ? "https://openlibrary.org" + book.key
+            : null,
+        category: detectCategory(book.subject || [])
+    };
+}
+
+function normaliseGoogleBook(item) {
+    const volume = item.volumeInfo || {};
+    const imageLinks = volume.imageLinks || {};
+
+    const subjects = Array.isArray(volume.categories)
+        ? volume.categories
+        : [];
+
+    let cover = imageLinks.thumbnail || imageLinks.smallThumbnail || null;
+
+    if (cover) {
+        cover = cover.replace(/^http:/, "https:");
+    }
+
+    return {
+        id: "gb:" + item.id,
+        title: volume.title || "Untitled book",
+        author: volume.authors ? volume.authors[0] : "Unknown author",
+        year: volume.publishedDate || null,
+        subjects: subjects,
+        cover: safeExternalUrl(cover),
+        source: "Google Books",
+        sourceUrl: safeExternalUrl(volume.infoLink || volume.previewLink),
+        category: detectCategory(subjects)
+    };
+}
+
+async function searchOpenLibrary(query, page) {
+    const params = new URLSearchParams({
+        q: query,
+        limit: "20",
+        page: String(page),
+        fields: "key,title,author_name,first_publish_year,cover_i,subject"
+    });
+
+    const response = await fetch(SEARCH_URL + "?" + params.toString());
+
+    if (!response.ok) {
+        throw new Error("Open Library search failed.");
+    }
+
+    const result = await response.json();
+
+    return (result.docs || []).map(normaliseOpenLibraryBook);
+}
+
+async function searchGoogleBooks(query, page) {
+    const params = new URLSearchParams({
+        q: query,
+        startIndex: String((page - 1) * 20),
+        maxResults: "20",
+        printType: "books"
+    });
+
+    const response = await fetch(
+        GOOGLE_BOOKS_URL + "?" + params.toString()
+    );
+
+    if (!response.ok) {
+        throw new Error("Google Books search failed.");
+    }
+
+    const result = await response.json();
+
+    return (result.items || []).map(normaliseGoogleBook);
+}
+
+function makeExternalKenyanCard(book) {
+    const card = makeElement("article", "book-result");
+    const cover = makeElement("div", "book-cover");
+
+    if (book.cover) {
+        const image = document.createElement("img");
+        image.src = book.cover;
+        image.alt = "Cover of " + book.title;
+        image.loading = "lazy";
+        cover.append(image);
+    } else {
+        cover.textContent = "📚";
+    }
+
+    const info = makeElement("div", "book-info");
+
+    info.append(makeElement("h3", "", book.title));
+    info.append(makeElement("p", "book-meta", book.author));
+
+    info.append(
+        makeElement(
+            "p",
+            "book-meta",
+            "Category: " + formatLabel(book.category)
+        )
+    );
+
+    info.append(
+        makeElement(
+            "p",
+            "book-meta",
+            "Subject: " + (book.subjects[0] || "Not specified")
+        )
+    );
+
+    if (book.year) {
+        info.append(
+            makeElement("p", "book-meta", "Published: " + book.year)
+        );
+    }
+
+    info.append(
+        makeElement("span", "access-badge", book.source)
+    );
+
+    card.append(cover, info);
+
+    if (book.sourceUrl) {
+        const link = makeElement("a", "resource-link", "View book");
+        link.href = book.sourceUrl;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        card.append(link);
+    } else {
+        card.append(
+            makeElement("p", "book-meta", "Catalogue record only")
+        );
+    }
+
+    return card;
+}
+
+function renderKenyanResults() {
+    const searchTerm = kenyanSearchInput.value.trim().toLowerCase();
+    const category = kenyanCategory.value;
+    const subject = kenyanSubject.value;
+
+    const allBooks = kenyanBooks.map(function (book) {
+        return {
+            kind: "local",
+            book: book,
+            title: book.title || "",
+            author: book.author || "",
+            subjects: [book.subject_name || ""],
+            category: book.resource_type || "other"
+        };
+    }).concat(
+        kenyanSearchResults.map(function (book) {
+            return {
+                kind: "external",
+                book: book,
+                title: book.title,
+                author: book.author,
+                subjects: book.subjects,
+                category: book.category
+            };
+        })
+    );
+
+    const filtered = allBooks.filter(function (item) {
+        const searchable = [
+            item.title,
+            item.author,
+            item.subjects.join(" ")
+        ].join(" ").toLowerCase();
+
+        const matchesSearch = !searchTerm ||
+            searchable.includes(searchTerm);
+
+        const matchesCategory = !category ||
+            item.category === category;
+
+        const matchesSubject = !subject ||
+            item.subjects.includes(subject);
+
+        return matchesSearch && matchesCategory && matchesSubject;
+    });
+
+    kenyanBookGrid.replaceChildren();
+
+    if (!filtered.length) {
+        kenyanBookStatus.textContent =
+            "No matching books found. Try another search.";
+
+        return;
+    }
+
+    filtered.forEach(function (item) {
+        if (item.kind === "local") {
+            kenyanBookGrid.append(makeKenyanCard(item.book));
+        } else {
+            kenyanBookGrid.append(makeExternalKenyanCard(item.book));
+        }
+    });
+
+    kenyanBookStatus.textContent =
+        "Showing " + filtered.length +
+        " results from LearnSphere and external catalogues.";
+}
+
+function populateKenyanSearchSubjects() {
+    const selected = kenyanSubject.value;
+
+    kenyanSubject.replaceChildren();
+    addOption(kenyanSubject, "", "All subjects");
+
+    const subjects = new Set();
+
+    kenyanBooks.forEach(function (book) {
+        if (book.subject_name) subjects.add(book.subject_name);
+    });
+
+    kenyanSearchResults.forEach(function (book) {
+        (book.subjects || []).forEach(function (name) {
+            if (name) subjects.add(name);
+        });
+    });
+
+    Array.from(subjects).sort().slice(0, 200).forEach(function (name) {
+        addOption(kenyanSubject, name, name);
+    });
+
+    if (subjects.has(selected)) {
+        kenyanSubject.value = selected;
+    }
+}
+
+async function searchKenyanBooks(query, page) {
+    kenyanBookStatus.textContent = "Searching LearnSphere and external catalogues...";
+    kenyanSearchPage = page;
+
+    if (page === 1) {
+        kenyanSearchResults = [];
+    }
+
+    const searches = await Promise.allSettled([
+        searchOpenLibrary(query, page),
+        searchGoogleBooks(query, page)
+    ]);
+
+    let externalResults = [];
+    let failedSources = [];
+
+    searches.forEach(function (result, index) {
+        if (result.status === "fulfilled") {
+            externalResults = externalResults.concat(result.value);
+        } else {
+            failedSources.push(index === 0 ? "Open Library" : "Google Books");
+            console.error(result.reason);
+        }
+    });
+
+    kenyanSearchResults = kenyanSearchResults.concat(externalResults);
+
+    populateKenyanSearchSubjects();
+    renderKenyanResults();
+
+    if (failedSources.length) {
+        kenyanBookStatus.textContent +=
+            " Some sources could not be reached: " +
+            failedSources.join(", ") + ".";
+    }
+}
+
+// --------------------------------------------------
+// SAVED BOOKS AND ACCOUNT
 // --------------------------------------------------
 
 async function loadSavedBooks() {
@@ -755,9 +901,7 @@ async function loadSavedBooks() {
 
     session = data.session;
 
-    if (!session) {
-        return;
-    }
+    if (!session) return;
 
     const { data: rows, error: bookmarkError } = await db
         .from("bookmarks")
@@ -769,11 +913,9 @@ async function loadSavedBooks() {
         return;
     }
 
-    if (rows) {
-        rows.forEach(function (row) {
-            savedKeys.add(row.external_id);
-        });
-    }
+    (rows || []).forEach(function (row) {
+        savedKeys.add(row.external_id);
+    });
 }
 
 // --------------------------------------------------
@@ -790,12 +932,12 @@ libraryForm.addEventListener("submit", function (event) {
     currentQuery = query;
     currentPage = 1;
 
-    runSearch(currentQuery, currentPage);
+    runInternationalSearch(currentQuery, currentPage);
 });
 
 moreButton.addEventListener("click", function () {
     currentPage++;
-    runSearch(currentQuery, currentPage);
+    runInternationalSearch(currentQuery, currentPage);
 });
 
 internationalCategory.addEventListener("change", displayInternationalBooks);
@@ -803,36 +945,57 @@ internationalSubject.addEventListener("change", displayInternationalBooks);
 
 kenyanSearchForm.addEventListener("submit", function (event) {
     event.preventDefault();
-    filterKenyanBooks();
+
+    const query = kenyanSearchInput.value.trim();
+
+    if (!query) {
+        kenyanSearchResults = [];
+        renderKenyanResults();
+        return;
+    }
+
+    searchKenyanBooks(query, 1);
 });
 
-kenyanSearchInput.addEventListener("input", filterKenyanBooks);
-kenyanCategory.addEventListener("change", filterKenyanBooks);
-kenyanSubject.addEventListener("change", filterKenyanBooks);
+kenyanSearchInput.addEventListener("input", function () {
+    if (!kenyanSearchInput.value.trim()) {
+        kenyanSearchResults = [];
+        renderKenyanResults();
+    }
+});
+
+kenyanCategory.addEventListener("change", renderKenyanResults);
+kenyanSubject.addEventListener("change", renderKenyanResults);
 
 // --------------------------------------------------
-// START THE LIBRARY
+// START
 // --------------------------------------------------
 
 async function start() {
-    await loadSavedBooks();
-    await loadKenyanBooks();
+    try {
+        await loadSavedBooks();
+        await loadKenyanCatalogue();
 
-    const startingQuery =
-        new URLSearchParams(window.location.search).get("q");
+        populateKenyanSubjects();
+        renderKenyanResults();
 
-    if (startingQuery) {
-        const cleanQuery = startingQuery.slice(0, 200).trim();
+        const startingQuery =
+            new URLSearchParams(window.location.search).get("q");
 
-        kenyanSearchInput.value = cleanQuery;
-        filterKenyanBooks();
+        if (startingQuery) {
+            const query = startingQuery.slice(0, 200).trim();
 
-        libraryInput.value = cleanQuery;
-        currentQuery = cleanQuery;
+            kenyanSearchInput.value = query;
+            libraryInput.value = query;
 
-        if (currentQuery) {
-            runSearch(currentQuery, 1);
+            searchKenyanBooks(query, 1);
+            runInternationalSearch(query, 1);
         }
+    } catch (error) {
+        console.error("Library startup error:", error);
+
+        kenyanBookStatus.textContent =
+            "Some library information could not be loaded.";
     }
 }
 
