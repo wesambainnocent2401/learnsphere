@@ -1,3 +1,4 @@
+
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const SEARCH_URL = "https://openlibrary.org/search.json";
@@ -10,6 +11,8 @@ const libraryInput = document.getElementById("libraryInput");
 const libraryStatus = document.getElementById("libraryStatus");
 const bookGrid = document.getElementById("bookGrid");
 const moreButton = document.getElementById("moreButton");
+const internationalCategory = document.getElementById("internationalCategory");
+const internationalSubject = document.getElementById("internationalSubject");
 
 // Kenyan library elements
 const kenyanSearchForm = document.getElementById("kenyanSearchForm");
@@ -25,6 +28,7 @@ let currentPage = 1;
 let totalFound = 0;
 let shownCount = 0;
 let session = null;
+let internationalBooks = [];
 
 const savedKeys = new Set();
 
@@ -32,7 +36,10 @@ const savedKeys = new Set();
 let kenyanBooks = [];
 let kenyanSubjects = [];
 
-// Create HTML elements safely
+// --------------------------------------------------
+// GENERAL HELPERS
+// --------------------------------------------------
+
 function makeElement(tag, className, text) {
     const node = document.createElement(tag);
 
@@ -52,6 +59,16 @@ function addOption(select, value, label) {
     option.value = value;
     option.textContent = label;
     select.appendChild(option);
+}
+
+function formatLabel(value) {
+    if (!value) return "Other";
+
+    return value
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, function (letter) {
+            return letter.toUpperCase();
+        });
 }
 
 // --------------------------------------------------
@@ -77,6 +94,92 @@ function accessLabel(access) {
         text: "Catalogue only",
         css: "access-badge catalogue"
     };
+}
+
+// Categorise books using Open Library subject information.
+function getInternationalCategory(book) {
+    const subjects = (book.subject || [])
+        .join(" ")
+        .toLowerCase();
+
+    const rules = [
+        {
+            category: "mathematics",
+            words: ["mathematics", "algebra", "calculus", "geometry", "arithmetic", "statistics"]
+        },
+        {
+            category: "science",
+            words: ["science", "physics", "chemistry", "biology", "astronomy", "botany"]
+        },
+        {
+            category: "technology",
+            words: ["computer", "programming", "technology", "software", "engineering", "internet"]
+        },
+        {
+            category: "literature",
+            words: ["literature", "fiction", "poetry", "novel", "drama", "short stories"]
+        },
+        {
+            category: "business",
+            words: ["business", "economics", "management", "accounting", "finance", "marketing"]
+        },
+        {
+            category: "history",
+            words: ["history", "historical", "civilization", "archaeology"]
+        },
+        {
+            category: "education",
+            words: ["education", "teaching", "learning", "pedagogy", "school"]
+        }
+    ];
+
+    for (const rule of rules) {
+        const matches = rule.words.some(function (word) {
+            return subjects.includes(word);
+        });
+
+        if (matches) {
+            return rule.category;
+        }
+    }
+
+    return "other";
+}
+
+function getInternationalSubject(book) {
+    if (!Array.isArray(book.subject) || book.subject.length === 0) {
+        return "Not specified";
+    }
+
+    return book.subject[0];
+}
+
+function populateInternationalSubjects() {
+    const selectedValue = internationalSubject.value;
+
+    internationalSubject.replaceChildren();
+    addOption(internationalSubject, "", "All subjects");
+
+    const subjects = new Set();
+
+    internationalBooks.forEach(function (book) {
+        (book.subject || []).forEach(function (subject) {
+            if (typeof subject === "string" && subject.trim()) {
+                subjects.add(subject.trim());
+            }
+        });
+    });
+
+    Array.from(subjects)
+        .sort()
+        .slice(0, 200)
+        .forEach(function (subject) {
+            addOption(internationalSubject, subject, subject);
+        });
+
+    if (subjects.has(selectedValue)) {
+        internationalSubject.value = selectedValue;
+    }
 }
 
 function updateSaveButton(button, key) {
@@ -134,7 +237,7 @@ async function toggleSave(book, button) {
 }
 
 function makeBookCard(book) {
-    const card = makeElement("div", "book-result");
+    const card = makeElement("article", "book-result");
 
     const hasWorkPage =
         typeof book.key === "string" &&
@@ -170,7 +273,7 @@ function makeBookCard(book) {
 
     const info = makeElement("div", "book-info");
 
-    info.append(makeElement("h3", "", book.title));
+    info.append(makeElement("h3", "", book.title || "Untitled book"));
 
     info.append(
         makeElement(
@@ -192,6 +295,25 @@ function makeBookCard(book) {
         );
     }
 
+    const category = getInternationalCategory(book);
+    const subject = getInternationalSubject(book);
+
+    info.append(
+        makeElement(
+            "p",
+            "book-meta",
+            "Category: " + formatLabel(category)
+        )
+    );
+
+    info.append(
+        makeElement(
+            "p",
+            "book-meta",
+            "Subject: " + subject
+        )
+    );
+
     const label = accessLabel(book.ebook_access);
 
     info.append(
@@ -205,7 +327,6 @@ function makeBookCard(book) {
         const saveButton = makeElement("button", "save-button");
 
         saveButton.type = "button";
-
         updateSaveButton(saveButton, book.key);
 
         saveButton.addEventListener("click", function () {
@@ -218,12 +339,46 @@ function makeBookCard(book) {
     return card;
 }
 
+function displayInternationalBooks() {
+    const selectedCategory = internationalCategory.value;
+    const selectedSubject = internationalSubject.value;
+
+    const filteredBooks = internationalBooks.filter(function (book) {
+        const matchesCategory =
+            !selectedCategory ||
+            getInternationalCategory(book) === selectedCategory;
+
+        const matchesSubject =
+            !selectedSubject ||
+            (book.subject || []).includes(selectedSubject);
+
+        return matchesCategory && matchesSubject;
+    });
+
+    bookGrid.replaceChildren();
+
+    if (filteredBooks.length === 0) {
+        libraryStatus.textContent =
+            "No books match these filters. Try another category or subject.";
+
+        return;
+    }
+
+    filteredBooks.forEach(function (book) {
+        bookGrid.append(makeBookCard(book));
+    });
+
+    libraryStatus.textContent =
+        "Showing " + filteredBooks.length +
+        " matching books from " + shownCount + " loaded results.";
+}
+
 async function fetchBooks(query, page) {
     const params = new URLSearchParams({
         q: query,
         limit: String(PAGE_SIZE),
         page: String(page),
-        fields: "key,title,author_name,first_publish_year,cover_i,ebook_access"
+        fields: "key,title,author_name,first_publish_year,cover_i,ebook_access,subject"
     });
 
     const response = await fetch(
@@ -248,29 +403,30 @@ async function runSearch(query, page) {
 
         if (page === 1) {
             bookGrid.replaceChildren();
+            internationalBooks = [];
             shownCount = 0;
         }
 
         totalFound = result.numFound || 0;
 
-        (result.docs || []).forEach(function (book) {
-            bookGrid.append(makeBookCard(book));
-        });
+        const newBooks = result.docs || [];
 
-        shownCount += (result.docs || []).length;
+        internationalBooks = internationalBooks.concat(newBooks);
+        shownCount += newBooks.length;
+
+        populateInternationalSubjects();
+        displayInternationalBooks();
 
         if (totalFound === 0) {
             libraryStatus.textContent =
                 'No books found for "' + query + '".';
-        } else {
-            libraryStatus.textContent =
-                "Showing " + shownCount +
-                " of " + totalFound.toLocaleString() + " results";
         }
 
-        moreButton.hidden = shownCount >= totalFound;
+        moreButton.hidden =
+            shownCount >= totalFound || newBooks.length === 0;
 
     } catch (error) {
+        console.error("International library error:", error);
         libraryStatus.textContent = error.message;
     }
 }
@@ -281,7 +437,6 @@ async function runSearch(query, page) {
 
 function populateKenyanSubjects() {
     kenyanSubject.replaceChildren();
-
     addOption(kenyanSubject, "", "All subjects");
 
     const names = new Set();
@@ -307,7 +462,6 @@ function getKenyanCategory(book) {
 
 function makeKenyanBookCard(book) {
     const card = makeElement("article", "book-result");
-
     const cover = makeElement("div", "book-cover");
 
     if (book.cover_url) {
@@ -337,11 +491,7 @@ function makeKenyanBookCard(book) {
     const info = makeElement("div", "book-info");
 
     info.append(
-        makeElement(
-            "h3",
-            "",
-            book.title || "Untitled book"
-        )
+        makeElement("h3", "", book.title || "Untitled book")
     );
 
     info.append(
@@ -366,20 +516,15 @@ function makeKenyanBookCard(book) {
         makeElement(
             "p",
             "book-meta",
-            "Subject: " +
-            (book.subject_name || "General learning")
+            "Subject: " + (book.subject_name || "General learning")
         )
     );
-
-    const categoryLabel = book.resource_type
-        ? book.resource_type.replace(/_/g, " ")
-        : "Learning resource";
 
     info.append(
         makeElement(
             "span",
             "access-badge",
-            categoryLabel
+            formatLabel(book.resource_type)
         )
     );
 
@@ -395,7 +540,6 @@ function makeKenyanBookCard(book) {
         );
     }
 
-    // External reading link
     if (book.source_url) {
         try {
             const sourceUrl = new URL(book.source_url);
@@ -419,11 +563,7 @@ function makeKenyanBookCard(book) {
         }
     }
 
-    // Secure download button
-    if (
-        book.download_allowed === true &&
-        book.file_path
-    ) {
+    if (book.download_allowed === true && book.file_path) {
         const downloadButton = makeElement(
             "button",
             "save-button",
@@ -537,9 +677,7 @@ function filterKenyanBooks() {
     }
 
     filteredBooks.forEach(function (book) {
-        kenyanBookGrid.append(
-            makeKenyanBookCard(book)
-        );
+        kenyanBookGrid.append(makeKenyanBookCard(book));
     });
 
     kenyanBookStatus.textContent =
@@ -550,8 +688,7 @@ function filterKenyanBooks() {
 }
 
 async function loadKenyanBooks() {
-    kenyanBookStatus.textContent =
-        "Loading Kenyan books...";
+    kenyanBookStatus.textContent = "Loading Kenyan books...";
 
     const [
         { data: subjects, error: subjectError },
@@ -559,17 +696,16 @@ async function loadKenyanBooks() {
     ] = await Promise.all([
         db
             .from("subjects")
-            .select("id, name")
+            .select("id, name, sort_order")
             .eq("is_active", true)
             .order("sort_order", { ascending: true }),
 
         db
             .from("resources")
             .select(
-                "title, description, author, resource_type, subject_id, subject_name, language, publication_year, cover_url, source_name, source_url, licence, access_type, file_path, download_allowed"
+                "title, description, author, resource_type, subject_id, language, publication_year, cover_url, source_name, source_url, licence, access_type, file_path, download_allowed"
             )
             .eq("approval_status", "approved")
-            .eq("country_code", "KE")
             .limit(200)
     ]);
 
@@ -597,7 +733,7 @@ async function loadKenyanBooks() {
     kenyanBooks = (resources || []).map(function (book) {
         return {
             ...book,
-            subject_name: book.subject_name || subjectNames.get(book.subject_id) || ""
+            subject_name: subjectNames.get(book.subject_id) || ""
         };
     });
 
@@ -662,15 +798,16 @@ moreButton.addEventListener("click", function () {
     runSearch(currentQuery, currentPage);
 });
 
+internationalCategory.addEventListener("change", displayInternationalBooks);
+internationalSubject.addEventListener("change", displayInternationalBooks);
+
 kenyanSearchForm.addEventListener("submit", function (event) {
     event.preventDefault();
     filterKenyanBooks();
 });
 
 kenyanSearchInput.addEventListener("input", filterKenyanBooks);
-
 kenyanCategory.addEventListener("change", filterKenyanBooks);
-
 kenyanSubject.addEventListener("change", filterKenyanBooks);
 
 // --------------------------------------------------
@@ -679,7 +816,6 @@ kenyanSubject.addEventListener("change", filterKenyanBooks);
 
 async function start() {
     await loadSavedBooks();
-
     await loadKenyanBooks();
 
     const startingQuery =
@@ -688,7 +824,6 @@ async function start() {
     if (startingQuery) {
         const cleanQuery = startingQuery.slice(0, 200).trim();
 
-        // Search both collections with the same words
         kenyanSearchInput.value = cleanQuery;
         filterKenyanBooks();
 
